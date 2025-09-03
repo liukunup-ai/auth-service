@@ -32,6 +32,10 @@
         "ms-azuretools.vscode-docker",
         "redhat.vscode-yaml",
         "golang.go",
+        "xiaoxin-technology.goctl",
+        "exiasr.hadolint",
+        "ms-vscode.makefile-tools",
+        "ms-vscode-remote.remote-wsl",
       ]
     },
     "launch": {

@@ -35,6 +35,8 @@ goctl api go -api ./api/auth.api -dir ./api -style goZero
 # 在rpc目录下执行
 goctl rpc protoc auth.proto --go_out=. --go-grpc_out=. --zrpc_out=. -style=goZero
 
+goctl model mysql ddl --src user.sql --dir .
+
 xiaoxin-technology.goctl
 
 🔐 主要功能模块
