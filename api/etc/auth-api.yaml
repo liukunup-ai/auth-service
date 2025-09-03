@@ -1,0 +1,31 @@
+# 服务配置
+Name: auth-api
+Host: 0.0.0.0
+Port: 7000
+
+# 认证配置
+Jwt:
+  AccessSecret: your_jwt_access_secret_key_here # 请使用一个复杂且安全的密钥
+  AccessExpire: 86400 # Token过期时间（秒），例如86400即24小时
+
+# 数据库配置
+Database:
+  Driver: mysql
+  Host: localhost
+  Port: 3306
+  User: root
+  Password: your_password
+  Name: auth_service
+
+# Redis配置（用于存储Token、验证码等）
+Redis:
+  Host: host:port
+  Pass: 
+  Type: node # 或 cluster[s citation:7]
+
+# 如果API服务需要调用其他RPC服务，需要配置Etcd等服务发现
+# UserRpc:
+#   Etcd:
+#     Hosts:
+#       - etcd_host:2379
+#     Key: user.rpc
