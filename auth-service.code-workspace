@@ -1,0 +1,69 @@
+{
+    "folders": [
+      {
+        "path": "api",
+        "name": "http-server"
+      },
+      {
+        "path": "rpc",
+        "name": "rpc-server"
+      },
+      {
+        "path": ".",
+        "name": "root"
+      }
+    ],
+    "settings": {
+      "go.toolsEnvVars": {
+        "GO111MODULE": "on",
+        "GOPROXY": "https://goproxy.cn,direct",
+        "GONOPROXY": "none;"
+      }
+    },
+    "extensions": {
+      "recommendations": [
+        "mhutchie.git-graph",
+        "donjayamanne.githistory",
+        "esbenp.prettier-vscode",
+        "aaron-bond.better-comments",
+        "humao.rest-client",
+        "vscode-icons-team.vscode-icons",
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml",
+        "golang.go",
+      ]
+    },
+    "launch": {
+      "version": "0.2.0",
+      "configurations": [
+        {
+          "type": "go",
+          "request": "launch",
+          "name": "HTTP Server",
+          "mode": "auto",
+          "cwd": "${workspaceFolder:http-server}",
+          "program": "${workspaceFolder:http-server}/auth.go",
+          "env": {},
+          "args": [],
+        },
+        {
+          "type": "go",
+          "request": "launch",
+          "name": "RPC Server",
+          "mode": "auto",
+          "cwd": "${workspaceFolder:rpc-server}",
+          "program": "${workspaceFolder:rpc-server}/auth.go",
+          "env": {},
+          "args": [],
+        }
+      ],
+      "compounds": [
+        {
+          "name": "Both (HTTP & RPC Server)",
+          "configurations": ["HTTP Server", "RPC Server"],
+          "stopAll": true
+        }
+      ]
+    }
+}

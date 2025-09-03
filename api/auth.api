@@ -16,6 +16,12 @@ type BaseResponse {
 	Data    interface{} `json:"data,optional"`
 }
 
+service auth-api {
+	// 健康检查
+	@handler HealthCheck
+	get /healthz returns (BaseResponse)
+}
+
 type (
 	// 获取验证码响应
 	CaptchaResp {
