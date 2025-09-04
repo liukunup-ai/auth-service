@@ -1,0 +1,11 @@
+###用户登录
+POST {{host}}/v1/auth/login
+Content-Type: application/json
+
+{
+  "account": "admin",
+  "password": "123456"
+}
+> {%
+    client.global.set("token", response.body.data.token);
+%}

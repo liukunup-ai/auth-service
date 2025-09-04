@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "./auth";
+
+message Empty {}
+
+message BaseResponse {
+  int64 code = 1;
+  string message = 2;
+  string data = 3; // 存储 JSON 序列化后的数据
+}
+
+message LoginReq {
+  string username = 1;
+  string password = 2;
+  string captchaId = 3;
+  string captchaAnswer = 4;
+}
+message LoginResp {
+  string userId = 1;
+  string username = 2;
+  string email = 3;
+  string avatar = 4;
+  string accessToken = 5;
+  string refreshToken = 6;
+  int64 expiresIn = 7;
+  string tokenType = 8;
+}
+
+service Auth {
+  // 健康检查
+  rpc HealthCheck(Empty) returns (BaseResponse);
+
+  // 登录
+  rpc Login(LoginReq) returns (LoginResp);
+}

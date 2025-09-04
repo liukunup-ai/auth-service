@@ -1,0 +1,15 @@
+syntax = "v1"
+
+// 响应
+type BaseResponse {
+	Code    int64       `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,optional"`
+}
+
+// 服务
+service auth-api {
+	// 健康检查
+	@handler HealthCheck
+	get /healthz returns (BaseResponse)
+}

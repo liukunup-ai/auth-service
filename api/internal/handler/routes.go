@@ -74,6 +74,17 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Path:    "/auth/password/change",
 					Handler: ChangePasswordHandler(serverCtx),
 				},
+			}...,
+		),
+		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+		rest.WithPrefix("/v1"),
+		rest.WithTimeout(3000*time.Millisecond),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.AuthInterceptor},
+			[]rest.Route{
 				{
 					Method:  http.MethodPost,
 					Path:    "/auth/permission/check",

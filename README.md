@@ -1,5 +1,70 @@
 # Common Auth Service
 
+## 常用命令
+
+```shell
+# 确保在项目的根目录下
+cd auth-service
+
+# HTTP
+goctl api go --api ./api/dsl/auth.api --dir ./api/ --style goZero
+# 运行
+cd api
+go run auth.go
+
+# RPC
+goctl rpc protoc ./rpc/dsl/auth.proto --go_out=./rpc --go-grpc_out=./rpc --zrpc_out=./rpc --style goZero
+```
+
+## 目录结构
+
+```plaintext
+.
+├── api                   # HTTP 服务
+│   ├── dsl               # 在这里设计和定义你的 HTTP 接口
+│   │   └── auth.api      #
+│   ├── http/             # HTTP Client 接口测试用例
+│   ├── etc               # 配置文件
+│   │   └── auth-api.yaml #
+│   ├── internal          # 生成的代码
+│   │   ├── config/       # 配置类
+│   │   ├── handler/      #
+│   │   ├── logic/        # 业务逻辑
+│   │   ├── middleware/   # 中间件
+│   │   ├── svc/          #
+│   │   └── types/        #
+│   └── auth.go           # 服务入口
+├── rpc                   # RPC 服务
+│   ├── dsl               # 在这里设计和定义你的 RPC 接口
+│   │   └── auth.proto    #
+│   ├── etc               # 配置文件
+│   │   └── auth.yaml     #
+│   ├── internal          #
+│   │   ├── config/       #
+│   │   ├── logic/        #
+│   │   ├── server/       #
+│   │   └── svc/          #
+│   ├── auth/             # *.pb.go 文件 (请勿修改)
+│   ├── authClient/       # RPC 客户端
+│   └── auth.go           # 服务入口
+├── model                 #
+│   └── mysql             #
+│       └── user.sql      #
+├── util                  #
+├── deploy                #
+├── Makefile              # 便捷命令
+├── *.code-workspace      # 工作空间的配置文件
+├── go.mod                #
+├── go.sum                #
+├── .gitignore            #
+├── LICENSE               #
+└── README.md             #
+```
+
+
+
+
+
 ## go-zero
 
 ```
@@ -9,6 +74,41 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
 
 goctl --version
 ```
+
+
+
+A cli tool to generate api, zrpc, model code
+
+GitHub: https://github.com/zeromicro/go-zero
+Site:   https://go-zero.dev
+
+Usage:
+  goctl [command]
+
+Available Commands:
+  api               Generate api related files
+  bug               Report a bug
+  completion        Generate the autocompletion script for the specified shell
+  config            
+  docker            Generate Dockerfile
+  env               Check or edit goctl environment
+  gateway           gateway is a tool to generate gateway code
+  help              Help about any command
+  kube              Generate kubernetes files
+  migrate           Migrate from tal-tech to zeromicro
+  model             Generate model code
+  quickstart        quickly start a project
+  rpc               Generate rpc code
+  template          Template operation
+  upgrade           Upgrade goctl to latest version
+
+Flags:
+  -h, --help      help for goctl
+  -v, --version   version for goctl
+
+
+Use "goctl [command] --help" for more information about a command.
+
 
 auth-service/
 ├── api

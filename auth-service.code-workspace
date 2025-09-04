@@ -36,6 +36,7 @@
         "exiasr.hadolint",
         "ms-vscode.makefile-tools",
         "ms-vscode-remote.remote-wsl",
+        "zxh404.vscode-proto3",
       ]
     },
     "launch": {
@@ -64,7 +65,7 @@
       ],
       "compounds": [
         {
-          "name": "Both (HTTP & RPC Server)",
+          "name": "HTTP & RPC Server",
           "configurations": ["HTTP Server", "RPC Server"],
           "stopAll": true
         }
