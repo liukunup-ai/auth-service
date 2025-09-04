@@ -2,6 +2,7 @@ Name: auth-api
 Host: 0.0.0.0
 Port: 7001 # 监听端口
 
+# JWT 认证配置
 Auth:
   AccessSecret: abcd1234 # 生产环境请使用更复杂的密钥
   AccessExpire: 86400    # 默认 Token 过期时间 1 天
@@ -14,3 +15,9 @@ Redis:
     - localhost:6379
   DB: 0        # 数据库 (默认 0)
   Password: "" # 密码 (没有则留空)
+
+# 验证码
+Captcha:
+  Enable: true # 是否启用
+  Expire: 180  # 默认 Captcha 过期时间 180 秒
+  Length: 6    # 长度

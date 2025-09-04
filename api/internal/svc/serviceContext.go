@@ -3,10 +3,13 @@ package svc
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"auth-service/api/internal/config"
 	"auth-service/api/internal/middleware"
+	mysql "auth-service/model/mysql"
 
+	"github.com/mojocn/base64Captcha"
 	"github.com/redis/go-redis/v9"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"github.com/zeromicro/go-zero/rest"
@@ -17,6 +20,10 @@ type ServiceContext struct {
 	DB              sqlx.SqlConn
 	Redis           redis.UniversalClient
 	AuthInterceptor rest.Middleware
+	Captcha         *base64Captcha.Captcha
+	PasswordEncoder *PasswordEncoder
+	//
+	UserModel mysql.UserModel
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -35,10 +42,17 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		panic(fmt.Sprintf("failed to connect to redis: %v", err))
 	}
 
+	// 初始化 Captcha 依赖项
+	driver := base64Captcha.NewDriverDigit(80, 240, c.Captcha.Length, 0.7, 80)
+	store := NewRedisStore(context.Background(), rdb, "captcha:", time.Duration(c.Captcha.Expire)*time.Second)
+
 	return &ServiceContext{
 		Config:          c,
 		DB:              conn,
 		Redis:           rdb,
 		AuthInterceptor: middleware.NewAuthInterceptorMiddleware().Handle,
+		Captcha:         base64Captcha.NewCaptcha(driver, store),
+		PasswordEncoder: &PasswordEncoder{},
+		UserModel:       mysql.NewUserModel(conn),
 	}
 }

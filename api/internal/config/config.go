@@ -19,4 +19,10 @@ type Config struct {
 		DB       int
 		Password string
 	}
+
+	Captcha struct {
+		Enable bool
+		Expire int64
+		Length int
+	}
 }
