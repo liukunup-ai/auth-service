@@ -1,7 +1,16 @@
 Name: auth-api
 Host: 0.0.0.0
-Port: 8888
+Port: 7001 # 监听端口
 
 Auth:
-  AccessSecret: abcd1234
-  AccessExpire: 86400
+  AccessSecret: abcd1234 # 生产环境请使用更复杂的密钥
+  AccessExpire: 86400    # 默认 Token 过期时间 1 天
+
+Mysql:
+  DataSource: "user:password@tcp(127.0.0.1:3306)/your_db?charset=utf8mb4&parseTime=true&loc=Local" # 请根据实际情况修改
+
+Redis:
+  Addrs:       # 节点 (单机或哨兵时只需要填写一个地址)
+    - localhost:6379
+  DB: 0        # 数据库 (默认 0)
+  Password: "" # 密码 (没有则留空)
