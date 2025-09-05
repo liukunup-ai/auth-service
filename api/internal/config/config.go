@@ -25,7 +25,7 @@ type Config struct {
 
 	Captcha struct {
 		Enable      bool
-		Expire      int64
+		ExpiresIn   int64
 		Length      int
 		CachePrefix string
 	}

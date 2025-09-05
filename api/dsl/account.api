@@ -107,6 +107,7 @@ service auth-api {
 type (
 	// 登出请求
 	LogoutReq {
+		AccessToken  string `json:"accessToken,optional"`
 		RefreshToken string `json:"refreshToken,optional"`
 	}
 

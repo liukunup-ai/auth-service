@@ -50,6 +50,7 @@ type LoginResp struct {
 }
 
 type LogoutReq struct {
+	AccessToken  string `json:"accessToken,optional"`
 	RefreshToken string `json:"refreshToken,optional"`
 }
 

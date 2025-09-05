@@ -27,7 +27,7 @@ func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Register
 }
 
 func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterResp, err error) {
-	l.Info("Register request received", "username", req.Username, "email", req.Email)
+	l.Info("Register request received", "username", req.Username, "email", req.Email, "phone", req.Phone)
 
 	// 校验验证码（如果开启了验证码）
 	if l.svcCtx.Config.Captcha.Enable {
@@ -43,17 +43,19 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 		}
 	}
 
-	// 检查用户名和邮箱是否已存在
+	// 检查用户名/邮箱/手机号是否已存在
 	var (
 		userByUsername *model.User
 		userByEmail    *model.User
+		userByPhone    *model.User
 		errUsername    error
 		errEmail       error
+		errPhone       error
 	)
 
 	// 使用 mr.Finish 优雅并发查询
 	mr.Finish(
-		func() error {
+		func() error { // 查询用户名
 			errUsername = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByUsername, "SELECT * FROM user WHERE username = ?", req.Username)
 			if errUsername != nil && errUsername != model.ErrNotFound {
 				l.Infof("Find user by username error: %v", errUsername)
@@ -61,11 +63,19 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 			}
 			return nil
 		},
-		func() error {
-			errEmail = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByEmail, "SELECT * FROM user WHERE email = ?", req.Email)
+		func() error { // 查询邮箱
+			errEmail = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByEmail, "SELECT * FROM user WHERE email = ?", req.Username)
 			if errEmail != nil && errEmail != model.ErrNotFound {
 				l.Infof("Find user by email error: %v", errEmail)
 				return errEmail
+			}
+			return nil
+		},
+		func() error { // 查询手机号
+			errPhone = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByPhone, "SELECT * FROM user WHERE phone = ?", req.Username)
+			if errPhone != nil && errPhone != model.ErrNotFound {
+				l.Infof("Find user by phone error: %v", errPhone)
+				return errPhone
 			}
 			return nil
 		},
@@ -79,6 +89,10 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 	if userByEmail != nil {
 		l.Info("Email already exists", "email", req.Email)
 		return nil, types.ErrEmailTaken
+	}
+	if userByPhone != nil {
+		l.Info("Phone already exists", "phone", req.Phone)
+		return nil, types.ErrPhoneTaken
 	}
 
 	// 构建用户模型

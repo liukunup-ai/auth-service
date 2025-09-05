@@ -24,7 +24,29 @@ func NewVerifyTokenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Verif
 }
 
 func (l *VerifyTokenLogic) VerifyToken(req *types.VerifyTokenReq) (resp *types.VerifyTokenResp, err error) {
-	// todo: add your logic here and delete this line
+	// 验证令牌
+	claims, err := l.svcCtx.JWT.VerifyAccessToken(req.Token)
+	if err != nil {
+		return &types.VerifyTokenResp{
+			IsValid: false,
+			Message: err.Error(),
+		}, err
+	}
 
-	return
+	// 查询用户信息
+	user, err := l.svcCtx.UserModel.FindOne(l.ctx, claims.UserID)
+	if err != nil {
+		return &types.VerifyTokenResp{
+			IsValid: false,
+			Message: "用户不存在",
+		}, nil
+	}
+
+	resp = &types.VerifyTokenResp{
+		IsValid:   true,
+		UserID:    user.PublicId,
+		Username:  claims.Username,
+		ExpiresAt: claims.ExpiresAt,
+	}
+	return resp, nil
 }

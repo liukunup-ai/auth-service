@@ -24,7 +24,17 @@ func NewLogoutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LogoutLogi
 }
 
 func (l *LogoutLogic) Logout(req *types.LogoutReq) (resp *types.BaseResponse, err error) {
-	// todo: add your logic here and delete this line
+	// 登出
+	if err := l.svcCtx.JWT.Logout(req.AccessToken, req.RefreshToken); err != nil {
+		return &types.BaseResponse{
+			Code:    400,
+			Message: "Logout failed",
+		}, err
+	}
 
-	return
+	resp = &types.BaseResponse{
+		Code:    0,
+		Message: "Logout",
+	}
+	return resp, nil
 }

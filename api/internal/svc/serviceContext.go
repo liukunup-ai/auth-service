@@ -91,7 +91,7 @@ func initCaptcha(c config.Config, rdb redis.UniversalClient) (*base64Captcha.Cap
 		return nil, fmt.Errorf("failed to create captcha driver")
 	}
 	// 使用 Redis 作为存储
-	store := NewRedisStore(context.Background(), rdb, c.Captcha.CachePrefix, time.Duration(c.Captcha.Expire)*time.Second)
+	store := NewRedisStore(context.Background(), rdb, c.Captcha.CachePrefix, time.Duration(c.Captcha.ExpiresIn)*time.Second)
 	if store == nil {
 		return nil, fmt.Errorf("failed to create captcha store")
 	}

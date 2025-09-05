@@ -1,11 +1,119 @@
-###用户登录
+### 获取验证码
+GET {{host}}/v1/auth/captcha
+Content-Type: application/json
+
+> {%
+    client.global.set("captchaId", response.body.captchaId);
+    client.log("验证码ID: " + response.body.captchaId);
+%}
+
+### 用户登录
 POST {{host}}/v1/auth/login
 Content-Type: application/json
 
 {
-  "account": "admin",
-  "password": "123456"
+  "username": "admin",
+  "password": "123456",
+  "captchaId": "{{captchaId}}",
+  "captchaAnswer": "1234"
 }
+
 > {%
-    client.global.set("token", response.body.data.token);
+    client.global.set("accessToken", response.body.accessToken);
+    client.global.set("refreshToken", response.body.refreshToken);
+    client.log("登录成功，用户ID: " + response.body.userId);
+    client.log("Access Token: " + response.body.accessToken);
+%}
+
+### 用户注册
+POST {{host}}/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "password": "password123",
+  "email": "newuser@example.com",
+  "phone": "13800138000",
+  "nickname": "新用户",
+  "captchaId": "{{captchaId}}",
+  "captchaAnswer": "1234"
+}
+
+> {%
+    client.log("注册成功，用户ID: " + response.body.userId);
+%}
+
+### 刷新令牌
+POST {{host}}/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+> {%
+    client.global.set("accessToken", response.body.accessToken);
+    client.global.set("refreshToken", response.body.refreshToken);
+    client.log("令牌刷新成功");
+%}
+
+### 验证令牌
+POST {{host}}/v1/auth/verify
+Content-Type: application/json
+
+{
+  "token": "{{accessToken}}"
+}
+
+> {%
+    if (response.body.isValid) {
+        client.log("令牌有效，用户: " + response.body.username);
+    } else {
+        client.log("令牌无效: " + response.body.message);
+    }
+%}
+
+### 重置密码
+POST {{host}}/v1/auth/password/reset
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "captchaId": "{{captchaId}}",
+  "captchaAnswer": "1234",
+  "newPassword": "newpassword123"
+}
+
+> {%
+    client.log("密码重置请求已发送");
+%}
+
+### 登出 (需要认证)
+POST {{host}}/v1/auth/logout
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "accessToken": "{{accessToken}}",
+  "refreshToken": "{{refreshToken}}"
+}
+
+> {%
+    client.log("登出成功");
+    client.global.clear("accessToken");
+    client.global.clear("refreshToken");
+%}
+
+### 修改密码 (需要认证)
+PUT {{host}}/v1/auth/password/change
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "oldPassword": "oldpassword",
+  "newPassword": "newpassword123"
+}
+
+> {%
+    client.log("密码修改成功");
 %}

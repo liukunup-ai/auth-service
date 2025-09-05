@@ -169,9 +169,9 @@ func (j *JWT) verifyToken(tokenString string, expectedType TokenType, secret []b
 	return nil, errors.New("invalid token")
 }
 
-func (j *JWT) Refresh(refreshTokenString string) (*TokenPair, error) {
+func (j *JWT) Refresh(refreshToken string) (*TokenPair, error) {
 	// 验证 Refresh Token
-	claims, err := j.VerifyRefreshToken(refreshTokenString)
+	claims, err := j.VerifyRefreshToken(refreshToken)
 	if err != nil {
 		return nil, fmt.Errorf("invalid refresh token: %v", err)
 	}
@@ -182,7 +182,7 @@ func (j *JWT) Refresh(refreshTokenString string) (*TokenPair, error) {
 		now := time.Now()
 		refreshExpire := time.Unix(claims.ExpiresAt, 0).Sub(now)
 		// 加入黑名单
-		if err := j.BlacklistToken(refreshTokenString, refreshExpire); err != nil {
+		if err := j.BlacklistToken(refreshToken, refreshExpire); err != nil {
 			return nil, fmt.Errorf("failed to blacklist old refresh token: %v", err)
 		}
 	}

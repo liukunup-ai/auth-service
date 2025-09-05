@@ -24,7 +24,20 @@ func NewRefreshTokenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Refr
 }
 
 func (l *RefreshTokenLogic) RefreshToken(req *types.RefreshTokenReq) (resp *types.RefreshTokenResp, err error) {
-	// todo: add your logic here and delete this line
+	// 刷新
+	tokenPair, err := l.svcCtx.JWT.Refresh(req.RefreshToken)
+	if err != nil {
+		return &types.RefreshTokenResp{
+			AccessToken:  "",
+			RefreshToken: "",
+			ExpiresIn:    0,
+		}, err
+	}
 
-	return
+	resp = &types.RefreshTokenResp{
+		AccessToken:  tokenPair.AccessToken,
+		RefreshToken: tokenPair.RefreshToken,
+		ExpiresIn:    tokenPair.AccessExpire,
+	}
+	return resp, nil
 }

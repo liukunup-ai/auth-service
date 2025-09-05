@@ -30,11 +30,10 @@ func (l *GetCaptchaLogic) GetCaptcha() (resp *types.CaptchaResp, err error) {
 		return nil, err
 	}
 
-	// 返回响应
 	resp = &types.CaptchaResp{
 		CaptchaID:    id,
 		CaptchaImage: b64s,
-		ExpiresIn:    l.svcCtx.Config.Captcha.Expire,
+		ExpiresIn:    l.svcCtx.Config.Captcha.ExpiresIn,
 	}
 	return resp, nil
 }
