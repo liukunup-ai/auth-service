@@ -9,22 +9,16 @@ import (
 	"auth-service/api/internal/middleware"
 	model "auth-service/model/mysql"
 
-	"github.com/casbin/casbin/v2"
-	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/mojocn/base64Captcha"
 	"github.com/redis/go-redis/v9"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"github.com/zeromicro/go-zero/rest"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type ServiceContext struct {
 	Config          config.Config
 	DB              sqlx.SqlConn
 	Redis           redis.UniversalClient
-	Enforcer        *casbin.Enforcer
 	PasswordEncoder *PasswordEncoder
 	Captcha         *base64Captcha.Captcha
 	AuthInterceptor rest.Middleware
@@ -35,10 +29,9 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	var (
 		err error
 
-		db       sqlx.SqlConn
-		rdb      redis.UniversalClient
-		captcha  *base64Captcha.Captcha
-		enforcer *casbin.Enforcer
+		db      sqlx.SqlConn
+		rdb     redis.UniversalClient
+		captcha *base64Captcha.Captcha
 	)
 
 	if db, err = initDatabase(c); err != nil {
@@ -49,10 +42,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		panic(fmt.Sprintf("failed to initialize redis: %v", err))
 	}
 
-	if enforcer, err = initCasbin(c); err != nil {
-		panic(fmt.Sprintf("failed to initialize casbin: %v", err))
-	}
-
 	if captcha, err = initCaptcha(c, rdb); err != nil {
 		panic(fmt.Sprintf("failed to initialize captcha: %v", err))
 	}
@@ -61,7 +50,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Config:          c,
 		DB:              db,
 		Redis:           rdb,
-		Enforcer:        enforcer,
 		PasswordEncoder: &PasswordEncoder{},
 		Captcha:         captcha,
 		AuthInterceptor: middleware.NewAuthInterceptorMiddleware().Handle,
@@ -92,35 +80,6 @@ func initRedis(c config.Config) (redis.UniversalClient, error) {
 		return nil, fmt.Errorf("failed to connect to redis: %v", err)
 	}
 	return rdb, nil
-}
-
-func initCasbin(c config.Config) (*casbin.Enforcer, error) {
-	// 创建 Gorm 连接
-	gormDB, err := gorm.Open(mysql.Open(c.Mysql.DataSource), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to mysql with gorm: %v", err)
-	}
-	// 创建 Adapter
-	adapter, err := gormadapter.NewAdapterByDB(gormDB)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create casbin adapter: %v", err)
-	}
-	// 创建 Enforcer
-	enforcer, err := casbin.NewEnforcer(c.Casbin.ModelPath, adapter)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create casbin enforcer: %v", err)
-	}
-	// 加载策略
-	err = enforcer.LoadPolicy()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load casbin policy: %v", err)
-	}
-	// 开启日志
-	enforcer.EnableLog(true)
-
-	return enforcer, nil
 }
 
 func initCaptcha(c config.Config, rdb redis.UniversalClient) (*base64Captcha.Captcha, error) {

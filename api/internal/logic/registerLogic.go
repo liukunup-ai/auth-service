@@ -2,7 +2,7 @@ package logic
 
 import (
 	"context"
-	"time"
+	"database/sql"
 
 	"auth-service/api/internal/svc"
 	"auth-service/api/internal/types"
@@ -82,33 +82,35 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 	}
 
 	// 构建用户模型
-	now := time.Now().Unix()
 	newUser := &model.User{
-		Username: req.Username,
-		Email:    req.Email,
-		Phone:    req.Phone,
-		Nickname: req.Nickname,
-		PasswordHash: l.svcCtx.PasswordEncoder.Hash(req.Password),
-		AccountStatus:       model.UserStatusActive,
-		CreatedAt:    now,
-		UpdatedAt:    now,
+		Username:      req.Username,
+		Email:         req.Email,
+		Phone:         sql.NullString{String: req.Phone, Valid: req.Phone != ""},
+		Nickname:      sql.NullString{String: req.Nickname, Valid: req.Nickname != ""},
+		PasswordHash:  l.svcCtx.PasswordEncoder.Hash(req.Password),
+		AccountStatus: model.UserStatusActive,
 	}
 
-	// 5. 插入数据库
-	if err := l.svcCtx.DB.RawDB().Insert(newUser); err != nil {
-		l.Errorf("Failed to insert user: %v", err)
+	// 插入数据库
+	result, err := l.svcCtx.UserModel.Insert(l.ctx, newUser)
+	if err != nil {
+		l.Errorf("Failed to insert user into database: %v", err)
+		return nil, types.ErrDatabaseError
+	}
+	if n, err := result.RowsAffected(); err != nil || n == 0 {
+		l.Errorf("No rows affected when inserting user: %v, rows affected: %d", err, n)
 		return nil, types.ErrDatabaseError
 	}
 
-	// 6. 打印成功日志
-	l.Infof("User registered successfully: userId=%s, username=%s", newUser.UserID, req.Username)
+	// 打印成功日志
+	l.Infof("User registered successfully: %s (ID: %d)", newUser.Username, newUser.PublicId)
 
-	// 7. 返回响应
-	resp := &types.RegisterResp{
-		UserID:    newUser.UserID,
+	// 返回响应
+	resp = &types.RegisterResp{
+		UserID:    newUser.PublicId,
 		Username:  newUser.Username,
 		Email:     newUser.Email,
-		CreatedAt: newUser.CreatedAt,
+		CreatedAt: newUser.CreatedAt.Unix(),
 	}
 
 	return resp, nil

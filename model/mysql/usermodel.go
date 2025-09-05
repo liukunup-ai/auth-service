@@ -27,3 +27,10 @@ func NewUserModel(conn sqlx.SqlConn) UserModel {
 func (m *customUserModel) withSession(session sqlx.Session) UserModel {
 	return NewUserModel(sqlx.NewSqlConnFromSession(session))
 }
+
+// AccountStatus
+const (
+	UserStatusActive   = 1 // 用户状态: 正常
+	UserStatusLocked   = 2 // 用户状态: 锁定
+	UserStatusDisabled = 3 // 用户状态: 禁用
+)

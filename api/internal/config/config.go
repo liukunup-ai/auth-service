@@ -5,23 +5,19 @@ import "github.com/zeromicro/go-zero/rest"
 type Config struct {
 	rest.RestConf
 
-	Auth struct {
-		AccessSecret string
-		AccessExpire int64
-	}
-
 	Mysql struct {
 		DataSource string
-	}
-
-	Casbin struct {
-		ModelPath string
 	}
 
 	Redis struct {
 		Addrs    []string
 		DB       int
 		Password string
+	}
+
+	Auth struct {
+		AccessSecret string
+		AccessExpire int64
 	}
 
 	Captcha struct {

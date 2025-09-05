@@ -42,6 +42,7 @@ type (
 	User struct {
 		Id                  uint64         `db:"id"`                    // 自增主键，内部关联使用
 		PublicId            string         `db:"public_id"`             // 对外暴露的UserID，避免ID枚举攻击
+		Nickname            sql.NullString `db:"nickname"`              // 昵称
 		Username            string         `db:"username"`              // 用户名
 		Email               string         `db:"email"`                 // 邮箱
 		EmailVerified       int64          `db:"email_verified"`        // 邮箱是否已验证 (0-未验证, 1-已验证)
