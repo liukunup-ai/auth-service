@@ -40,23 +40,24 @@ type (
 	}
 
 	User struct {
-		Id                  uint64         `db:"id"`
-		PublicId            string         `db:"public_id"`
-		Username            string         `db:"username"`
-		Email               string         `db:"email"`
-		EmailVerified       int64          `db:"email_verified"`
-		Phone               sql.NullString `db:"phone"`
-		PhoneVerified       int64          `db:"phone_verified"`
-		PasswordHash        string         `db:"password_hash"`
-		PasswordSalt        sql.NullString `db:"password_salt"`
-		MfaSecret           sql.NullString `db:"mfa_secret"`
-		MfaEnabled          int64          `db:"mfa_enabled"`
-		AccountLocked       int64          `db:"account_locked"`
-		FailedLoginAttempts uint64         `db:"failed_login_attempts"`
-		LockoutUntil        sql.NullTime   `db:"lockout_until"`
-		LastLoginAt         sql.NullTime   `db:"last_login_at"`
-		CreatedAt           time.Time      `db:"created_at"`
-		UpdatedAt           time.Time      `db:"updated_at"`
+		Id                  uint64         `db:"id"`                    // 自增主键，内部关联使用
+		PublicId            string         `db:"public_id"`             // 对外暴露的UserID，避免ID枚举攻击
+		Username            string         `db:"username"`              // 用户名
+		Email               string         `db:"email"`                 // 邮箱
+		EmailVerified       int64          `db:"email_verified"`        // 邮箱是否已验证 (0-未验证, 1-已验证)
+		Phone               sql.NullString `db:"phone"`                 // 手机号 (国际格式)
+		PhoneVerified       int64          `db:"phone_verified"`        // 手机号是否已验证 (0-未验证, 1-已验证)
+		PasswordHash        string         `db:"password_hash"`         // 加密后的密码
+		PasswordSalt        sql.NullString `db:"password_salt"`         // 密码盐
+		MfaSecret           sql.NullString `db:"mfa_secret"`            // MFA秘钥 (加密存储)
+		MfaEnabled          int64          `db:"mfa_enabled"`           // 是否启用了MFA (0-未启用, 1-启用)
+		AccountStatus       uint64         `db:"account_status"`        // 账户状态 (1-正常, 2-锁定, 3-禁用)
+		FailedLoginAttempts uint64         `db:"failed_login_attempts"` // 连续失败登录次数
+		LockoutUntil        sql.NullTime   `db:"lockout_until"`         // 账户锁定截止时间
+		LastLoginAt         sql.NullTime   `db:"last_login_at"`         // 最后一次登录时间
+		CreatedAt           time.Time      `db:"created_at"`            // 创建时间
+		UpdatedAt           time.Time      `db:"updated_at"`            // 更新时间
+		DeletedAt           sql.NullTime   `db:"deleted_at"`            // 软删除时间
 	}
 )
 
@@ -130,14 +131,14 @@ func (m *defaultUserModel) FindOneByUsername(ctx context.Context, username strin
 }
 
 func (m *defaultUserModel) Insert(ctx context.Context, data *User) (sql.Result, error) {
-	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, userRowsExpectAutoSet)
-	ret, err := m.conn.ExecCtx(ctx, query, data.PublicId, data.Username, data.Email, data.EmailVerified, data.Phone, data.PhoneVerified, data.PasswordHash, data.PasswordSalt, data.MfaSecret, data.MfaEnabled, data.AccountLocked, data.FailedLoginAttempts, data.LockoutUntil, data.LastLoginAt)
+	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, userRowsExpectAutoSet)
+	ret, err := m.conn.ExecCtx(ctx, query, data.PublicId, data.Username, data.Email, data.EmailVerified, data.Phone, data.PhoneVerified, data.PasswordHash, data.PasswordSalt, data.MfaSecret, data.MfaEnabled, data.AccountStatus, data.FailedLoginAttempts, data.LockoutUntil, data.LastLoginAt, data.DeletedAt)
 	return ret, err
 }
 
 func (m *defaultUserModel) Update(ctx context.Context, newData *User) error {
 	query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, userRowsWithPlaceHolder)
-	_, err := m.conn.ExecCtx(ctx, query, newData.PublicId, newData.Username, newData.Email, newData.EmailVerified, newData.Phone, newData.PhoneVerified, newData.PasswordHash, newData.PasswordSalt, newData.MfaSecret, newData.MfaEnabled, newData.AccountLocked, newData.FailedLoginAttempts, newData.LockoutUntil, newData.LastLoginAt, newData.Id)
+	_, err := m.conn.ExecCtx(ctx, query, newData.PublicId, newData.Username, newData.Email, newData.EmailVerified, newData.Phone, newData.PhoneVerified, newData.PasswordHash, newData.PasswordSalt, newData.MfaSecret, newData.MfaEnabled, newData.AccountStatus, newData.FailedLoginAttempts, newData.LockoutUntil, newData.LastLoginAt, newData.DeletedAt, newData.Id)
 	return err
 }
 

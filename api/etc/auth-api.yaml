@@ -10,6 +10,9 @@ Auth:
 Mysql:
   DataSource: "user:password@tcp(127.0.0.1:3306)/your_db?charset=utf8mb4&parseTime=true&loc=Local" # 请根据实际情况修改
 
+Casbin:
+  ModelPath: etc/model.conf
+
 Redis:
   Addrs:       # 节点 (单机或哨兵时只需要填写一个地址)
     - localhost:6379

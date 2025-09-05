@@ -7,52 +7,132 @@ import (
 
 	"auth-service/api/internal/config"
 	"auth-service/api/internal/middleware"
-	mysql "auth-service/model/mysql"
+	model "auth-service/model/mysql"
 
+	"github.com/casbin/casbin/v2"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/mojocn/base64Captcha"
 	"github.com/redis/go-redis/v9"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"github.com/zeromicro/go-zero/rest"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type ServiceContext struct {
 	Config          config.Config
 	DB              sqlx.SqlConn
 	Redis           redis.UniversalClient
-	AuthInterceptor rest.Middleware
-	Captcha         *base64Captcha.Captcha
+	Enforcer        *casbin.Enforcer
 	PasswordEncoder *PasswordEncoder
-	//
-	UserModel mysql.UserModel
+	Captcha         *base64Captcha.Captcha
+	AuthInterceptor rest.Middleware
+	UserModel       model.UserModel
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
+	var (
+		err error
+
+		db       sqlx.SqlConn
+		rdb      redis.UniversalClient
+		captcha  *base64Captcha.Captcha
+		enforcer *casbin.Enforcer
+	)
+
+	if db, err = initDatabase(c); err != nil {
+		panic(fmt.Sprintf("failed to initialize database: %v", err))
+	}
+
+	if rdb, err = initRedis(c); err != nil {
+		panic(fmt.Sprintf("failed to initialize redis: %v", err))
+	}
+
+	if enforcer, err = initCasbin(c); err != nil {
+		panic(fmt.Sprintf("failed to initialize casbin: %v", err))
+	}
+
+	if captcha, err = initCaptcha(c, rdb); err != nil {
+		panic(fmt.Sprintf("failed to initialize captcha: %v", err))
+	}
+
+	return &ServiceContext{
+		Config:          c,
+		DB:              db,
+		Redis:           rdb,
+		Enforcer:        enforcer,
+		PasswordEncoder: &PasswordEncoder{},
+		Captcha:         captcha,
+		AuthInterceptor: middleware.NewAuthInterceptorMiddleware().Handle,
+		UserModel:       model.NewUserModel(db),
+	}
+}
+
+func initDatabase(c config.Config) (sqlx.SqlConn, error) {
 	// 初始化 MySQL 连接
 	conn := sqlx.NewMysql(c.Mysql.DataSource)
+	// 测试连接
+	var result int64
+	if err := conn.QueryRow(&result, "SELECT 1"); err != nil || result != 1 {
+		return nil, fmt.Errorf("failed to connect to mysql: %v", err)
+	}
+	return conn, nil
+}
 
+func initRedis(c config.Config) (redis.UniversalClient, error) {
 	// 初始化 Redis 客户端
 	rdb := redis.NewUniversalClient(&redis.UniversalOptions{
 		Addrs:    c.Redis.Addrs,
 		DB:       c.Redis.DB,
 		Password: c.Redis.Password,
 	})
-	// (可选) 测试联通性
-	_, err := rdb.Ping(context.Background()).Result()
+	// 测试连接
+	if _, err := rdb.Ping(context.Background()).Result(); err != nil {
+		return nil, fmt.Errorf("failed to connect to redis: %v", err)
+	}
+	return rdb, nil
+}
+
+func initCasbin(c config.Config) (*casbin.Enforcer, error) {
+	// 创建 Gorm 连接
+	gormDB, err := gorm.Open(mysql.Open(c.Mysql.DataSource), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
-		panic(fmt.Sprintf("failed to connect to redis: %v", err))
+		return nil, fmt.Errorf("failed to connect to mysql with gorm: %v", err)
 	}
+	// 创建 Adapter
+	adapter, err := gormadapter.NewAdapterByDB(gormDB)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create casbin adapter: %v", err)
+	}
+	// 创建 Enforcer
+	enforcer, err := casbin.NewEnforcer(c.Casbin.ModelPath, adapter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create casbin enforcer: %v", err)
+	}
+	// 加载策略
+	err = enforcer.LoadPolicy()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load casbin policy: %v", err)
+	}
+	// 开启日志
+	enforcer.EnableLog(true)
 
-	// 初始化 Captcha 依赖项
+	return enforcer, nil
+}
+
+func initCaptcha(c config.Config, rdb redis.UniversalClient) (*base64Captcha.Captcha, error) {
+	// 创建驱动 (使用数字验证码)
 	driver := base64Captcha.NewDriverDigit(80, 240, c.Captcha.Length, 0.7, 80)
-	store := NewRedisStore(context.Background(), rdb, "captcha:", time.Duration(c.Captcha.Expire)*time.Second)
-
-	return &ServiceContext{
-		Config:          c,
-		DB:              conn,
-		Redis:           rdb,
-		AuthInterceptor: middleware.NewAuthInterceptorMiddleware().Handle,
-		Captcha:         base64Captcha.NewCaptcha(driver, store),
-		PasswordEncoder: &PasswordEncoder{},
-		UserModel:       mysql.NewUserModel(conn),
+	if driver == nil {
+		return nil, fmt.Errorf("failed to create captcha driver")
 	}
+	// 使用 Redis 作为存储
+	store := NewRedisStore(context.Background(), rdb, "captcha:", time.Duration(c.Captcha.Expire)*time.Second)
+	if store == nil {
+		return nil, fmt.Errorf("failed to create captcha store")
+	}
+	return base64Captcha.NewCaptcha(driver, store), nil
 }

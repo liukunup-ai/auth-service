@@ -14,6 +14,10 @@ type Config struct {
 		DataSource string
 	}
 
+	Casbin struct {
+		ModelPath string
+	}
+
 	Redis struct {
 		Addrs    []string
 		DB       int

@@ -14,6 +14,9 @@ go run auth.go
 
 # RPC
 goctl rpc protoc ./rpc/dsl/auth.proto --go_out=./rpc --go-grpc_out=./rpc --zrpc_out=./rpc --style goZero
+
+# MySQL
+goctl model mysql ddl --src ./model/mysql/user.sql --dir ./model/mysql
 ```
 
 ## 目录结构
@@ -77,65 +80,12 @@ goctl --version
 
 
 
-A cli tool to generate api, zrpc, model code
-
-GitHub: https://github.com/zeromicro/go-zero
-Site:   https://go-zero.dev
-
-Usage:
-  goctl [command]
-
-Available Commands:
-  api               Generate api related files
-  bug               Report a bug
-  completion        Generate the autocompletion script for the specified shell
-  config            
-  docker            Generate Dockerfile
-  env               Check or edit goctl environment
-  gateway           gateway is a tool to generate gateway code
-  help              Help about any command
-  kube              Generate kubernetes files
-  migrate           Migrate from tal-tech to zeromicro
-  model             Generate model code
-  quickstart        quickly start a project
-  rpc               Generate rpc code
-  template          Template operation
-  upgrade           Upgrade goctl to latest version
-
-Flags:
-  -h, --help      help for goctl
-  -v, --version   version for goctl
 
 
-Use "goctl [command] --help" for more information about a command.
 
 
-auth-service/
-├── api
-│   ├── auth.api          # 你的API定义文件
-│   ├── auth.go           # main函数入口
-│   ├── etc
-│   │   └── auth-api.yaml # 配置文件
-│   └── internal/
-│       ├── config/       # 配置定义
-│       ├── handler/      # 路由处理器
-│       ├── logic/        # 业务逻辑
-│       ├── middleware/   # 中间件
-│       ├── svc/          # 服务上下文
-│       └── types/        # 请求/响应类型
-├── go.mod
-└── go.sum
 
-# 在 auth-service 目录下执行
-# 使用 goZero 风格（注意大小写，根据你goctl版本支持的模式）
-goctl api go -api auth.api -dir . -style goZero
 
-goctl api go -api ./api/auth.api -dir ./api -style goZero
-
-# 在rpc目录下执行
-goctl rpc protoc auth.proto --go_out=. --go-grpc_out=. --zrpc_out=. -style=goZero
-
-goctl model mysql ddl --src user.sql --dir .
 
 xiaoxin-technology.goctl
 
