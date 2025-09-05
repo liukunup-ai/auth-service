@@ -106,11 +106,14 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 	}
 
 	resp = &types.LoginResp{
-		UserID:   user.PublicId,
-		Username: user.Username,
-		Email:    user.Email,
-		AccessToken: tokenPair.AccessToken,
-		RefreshToken: tokenPair.RefreshToken,
+		UserID:           user.PublicId,
+		Username:         user.Username,
+		Email:            user.Email,
+		AccessToken:      tokenPair.AccessToken,
+		AccessExpiresIn:  tokenPair.AccessExpire,
+		RefreshToken:     tokenPair.RefreshToken,
+		RefreshExpiresIn: tokenPair.RefreshExpire,
+		TokenType:        "Bearer",
 	}
 	return resp, nil
 }

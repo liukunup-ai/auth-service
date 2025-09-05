@@ -12,7 +12,7 @@ type BaseResponse struct {
 type CaptchaResp struct {
 	CaptchaID    string `json:"captchaId"`
 	CaptchaImage string `json:"captchaImage"` // base64 编码过的图片
-	ExpiresIn    int64  `json:"expiresIn"`    // 有效期（秒）
+	ExpiresIn    int64  `json:"expiresIn"`    // 验证码有效期（秒）
 }
 
 type ChangePasswordReq struct {
@@ -32,21 +32,21 @@ type CheckPermissionResp struct {
 }
 
 type LoginReq struct {
-	Username      string `json:"username" validate:"required"` // 用户名
+	Username      string `json:"username" validate:"required"` // 用户名 (或 邮箱/手机号)
 	Password      string `json:"password" validate:"required"` // 密码
-	CaptchaID     string `json:"captchaId,optional"`
-	CaptchaAnswer string `json:"captchaAnswer,optional"` // 用户填写的验证码
+	CaptchaID     string `json:"captchaId,optional"`           // 验证码ID (从获取验证码接口取得)
+	CaptchaAnswer string `json:"captchaAnswer,optional"`       // 用户实际填写的验证码
 }
 
 type LoginResp struct {
-	UserID       string `json:"userId"`
-	Username     string `json:"username"`
-	Email        string `json:"email,optional"`
-	Avatar       string `json:"avatar,optional"`
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-	ExpiresIn    int64  `json:"expiresIn"`                  // 有效期（秒）
-	TokenType    string `json:"tokenType" default:"Bearer"` // 令牌类型
+	UserID           string `json:"userId"`                     // 对外返回 Public ID 作为用户标识
+	Username         string `json:"username"`                   // 用户名
+	Email            string `json:"email,optional"`             // 邮箱
+	AccessToken      string `json:"accessToken"`                // 访问令牌
+	AccessExpiresIn  int64  `json:"accessExpiresIn"`            // 访问令牌的有效期（秒）
+	RefreshToken     string `json:"refreshToken"`               // 刷新令牌
+	RefreshExpiresIn int64  `json:"refreshExpiresIn"`           // 刷新令牌的有效期（秒）
+	TokenType        string `json:"tokenType" default:"Bearer"` // 令牌类型
 }
 
 type LogoutReq struct {
