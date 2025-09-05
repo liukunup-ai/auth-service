@@ -13,11 +13,11 @@ Redis:
 
 # JWT
 Auth:
-  AccessSecret: abcd1234 # 生产环境请使用更复杂的密钥
-  AccessExpire: 86400    # 默认 Token 过期时间 1 天
-  RefreshSecret: abcd1234
-  RefreshExpire: 172800
-  BlacklistCachePrefix: "auth:token:blacklist:" # Token 黑名单前缀 (用于登出)
+  AccessSecret: zvcbozvafjxcbdxh911bq101cblrgqbt # 生产环境请自行更换
+  AccessExpiresIn: 86400    # 设置 Access Token 过期时间 1 天
+  RefreshSecret: y2npaali4uex49ldvhziagljb92vd81w # 生产环境请自行更换
+  RefreshExpiresIn: 604800  # 设置 Refresh Token 过期时间 7 天
+  BlacklistCachePrefix: "auth:token:blacklist:" # 设置 Token 缓存黑名单前缀 (用于轮换/登出等场景)
 
 Captcha:
   Enable: true # 是否启用

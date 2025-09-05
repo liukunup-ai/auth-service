@@ -17,9 +17,9 @@ type Config struct {
 
 	Auth struct {
 		AccessSecret         string
-		AccessExpire         int64
+		AccessExpiresIn      int64
 		RefreshSecret        string
-		RefreshExpire        int64
+		RefreshExpiresIn     int64
 		BlacklistCachePrefix string
 	}
 

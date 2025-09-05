@@ -41,24 +41,24 @@ type CustomClaims struct {
 }
 
 type JWT struct {
-	accessSecret    []byte
-	accessExpire    time.Duration
-	refreshSecret   []byte
-	refreshExpire   time.Duration
-	rdb             redis.UniversalClient
-	blacklistPrefix string
-	mu              sync.Mutex
+	accessSecret     []byte
+	accessExpiresIn  time.Duration
+	refreshSecret    []byte
+	refreshExpiresIn time.Duration
+	rdb              redis.UniversalClient
+	blacklistPrefix  string
+	mu               sync.Mutex
 }
 
 func NewJWT(c config.Config, rdb redis.UniversalClient) *JWT {
 	return &JWT{
-		accessSecret:    []byte(c.Auth.AccessSecret),
-		accessExpire:    time.Duration(c.Auth.AccessExpire) * time.Second,
-		refreshSecret:   []byte(c.Auth.RefreshSecret),
-		refreshExpire:   time.Duration(c.Auth.RefreshExpire) * time.Second,
-		rdb:             rdb,
-		blacklistPrefix: c.Auth.BlacklistCachePrefix,
-		mu:              sync.Mutex{},
+		accessSecret:     []byte(c.Auth.AccessSecret),
+		accessExpiresIn:  time.Duration(c.Auth.AccessExpiresIn) * time.Second,
+		refreshSecret:    []byte(c.Auth.RefreshSecret),
+		refreshExpiresIn: time.Duration(c.Auth.RefreshExpiresIn) * time.Second,
+		rdb:              rdb,
+		blacklistPrefix:  c.Auth.BlacklistCachePrefix,
+		mu:               sync.Mutex{},
 	}
 }
 
@@ -94,10 +94,10 @@ func (j *JWT) generateToken(userID uint64, username string, tokenID string, toke
 
 	switch tokenType {
 	case AccessToken:
-		expireTime = now.Add(j.accessExpire)
+		expireTime = now.Add(j.accessExpiresIn)
 		secret = j.accessSecret
 	case RefreshToken:
-		expireTime = now.Add(j.refreshExpire)
+		expireTime = now.Add(j.refreshExpiresIn)
 		secret = j.refreshSecret
 	default:
 		return "", 0, errors.New("unsupported token type")
