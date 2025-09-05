@@ -21,6 +21,7 @@ type ServiceContext struct {
 	Redis           redis.UniversalClient
 	PasswordEncoder *PasswordEncoder
 	Captcha         *base64Captcha.Captcha
+	JWT             *JWT
 	AuthInterceptor rest.Middleware
 	UserModel       model.UserModel
 }
@@ -52,6 +53,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Redis:           rdb,
 		PasswordEncoder: &PasswordEncoder{},
 		Captcha:         captcha,
+		JWT:             NewJWT(c, rdb),
 		AuthInterceptor: middleware.NewAuthInterceptorMiddleware().Handle,
 		UserModel:       model.NewUserModel(db),
 	}
@@ -89,7 +91,7 @@ func initCaptcha(c config.Config, rdb redis.UniversalClient) (*base64Captcha.Cap
 		return nil, fmt.Errorf("failed to create captcha driver")
 	}
 	// 使用 Redis 作为存储
-	store := NewRedisStore(context.Background(), rdb, "captcha:", time.Duration(c.Captcha.Expire)*time.Second)
+	store := NewRedisStore(context.Background(), rdb, c.Captcha.CachePrefix, time.Duration(c.Captcha.Expire)*time.Second)
 	if store == nil {
 		return nil, fmt.Errorf("failed to create captcha store")
 	}

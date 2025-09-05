@@ -15,9 +15,12 @@ Redis:
 Auth:
   AccessSecret: abcd1234 # 生产环境请使用更复杂的密钥
   AccessExpire: 86400    # 默认 Token 过期时间 1 天
+  RefreshSecret: abcd1234
+  RefreshExpire: 172800
+  BlacklistCachePrefix: "auth:token:blacklist:" # Token 黑名单前缀 (用于登出)
 
-# 验证码
 Captcha:
   Enable: true # 是否启用
-  Expire: 180  # 默认 Captcha 过期时间 180 秒
+  Expire: 300  # 默认 Captcha 过期时间 300 秒
   Length: 6    # 长度
+  CachePrefix: "auth:captcha:" # Redis 缓存前缀

@@ -16,13 +16,17 @@ type Config struct {
 	}
 
 	Auth struct {
-		AccessSecret string
-		AccessExpire int64
+		AccessSecret         string
+		AccessExpire         int64
+		RefreshSecret        string
+		RefreshExpire        int64
+		BlacklistCachePrefix string
 	}
 
 	Captcha struct {
-		Enable bool
-		Expire int64
-		Length int
+		Enable      bool
+		Expire      int64
+		Length      int
+		CachePrefix string
 	}
 }
