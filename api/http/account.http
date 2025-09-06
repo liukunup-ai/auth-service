@@ -27,8 +27,8 @@ Content-Type: application/json
 {
   "username": "testuser",
   "password": "test#123456",
-  "captchaId": "0fVms9nAvuJNUOsDgrY3",
-  "captchaAnswer": "716352"
+  "captchaId": "sYdcVoHvFrmgjyfAt9eH",
+  "captchaAnswer": "959112"
 }
 
 ### 刷新令牌

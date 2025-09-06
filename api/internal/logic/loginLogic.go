@@ -33,7 +33,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 		if req.CaptchaID != "" || req.CaptchaAnswer != "" {
 			match := l.svcCtx.Captcha.Verify(req.CaptchaID, req.CaptchaAnswer, true)
 			if !match {
-				l.Info("Captcha verify failed", "captchaId", req.CaptchaID)
+				l.Info("Captcha verify failed", ", captchaId: ", req.CaptchaID)
 				return nil, types.ErrCaptchaInvalid
 			}
 		} else {
@@ -43,68 +43,81 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 	}
 
 	var (
-		user           *model.User
-		userByUsername *model.User
-		userByEmail    *model.User
-		userByPhone    *model.User
-		errUsername    error
-		errEmail       error
-		errPhone       error
+		user            model.User
+		userByUsername  model.User
+		userByEmail     model.User
+		userByPhone     model.User
+		foundByUsername bool
+		foundByEmail    bool
+		foundByPhone    bool
 	)
 
 	// 使用 mr.Finish 优雅并发查询
 	mr.Finish(
 		func() error { // 查询用户名
-			errUsername = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByUsername, "SELECT * FROM user WHERE username = ?", req.Username)
-			if errUsername != nil && errUsername != model.ErrNotFound {
-				l.Infof("Find user by username error: %v", errUsername)
-				return errUsername
+			err := l.svcCtx.DB.QueryRowCtx(l.ctx, &userByUsername, "SELECT * FROM user WHERE username = ?", req.Username)
+			if err == nil {
+				foundByUsername = true
+			} else if err != model.ErrNotFound {
+				l.Infof("Find user by username error: %v", err)
+				return err
 			}
 			return nil
 		},
 		func() error { // 查询邮箱
-			errEmail = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByEmail, "SELECT * FROM user WHERE email = ?", req.Username)
-			if errEmail != nil && errEmail != model.ErrNotFound {
-				l.Infof("Find user by email error: %v", errEmail)
-				return errEmail
+			err := l.svcCtx.DB.QueryRowCtx(l.ctx, &userByEmail, "SELECT * FROM user WHERE email = ?", req.Username)
+			if err == nil {
+				foundByEmail = true
+			} else if err != model.ErrNotFound {
+				l.Infof("Find user by email error: %v", err)
+				return err
 			}
 			return nil
 		},
 		func() error { // 查询手机号
-			errPhone = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByPhone, "SELECT * FROM user WHERE phone = ?", req.Username)
-			if errPhone != nil && errPhone != model.ErrNotFound {
-				l.Infof("Find user by phone error: %v", errPhone)
-				return errPhone
+			err := l.svcCtx.DB.QueryRowCtx(l.ctx, &userByPhone, "SELECT * FROM user WHERE phone = ?", req.Username)
+			if err == nil {
+				foundByPhone = true
+			} else if err != model.ErrNotFound {
+				l.Infof("Find user by phone error: %v", err)
+				return err
 			}
 			return nil
 		},
 	)
 
 	// 检查是否存在
-	if userByUsername != nil { // found by username
+	if foundByUsername { // found by username
 		user = userByUsername
-	} else if userByEmail != nil { // found by email
+	} else if foundByEmail { // found by email
 		user = userByEmail
-	} else if userByPhone != nil { // found by phone
+	} else if foundByPhone { // found by phone
 		user = userByPhone
 	} else {
-		l.Info("User not found", "username", req.Username)
+		l.Info("User not found", ", username: ", req.Username)
 		return nil, types.ErrUserNotFound
 	}
 
 	// 校验密码
-	if l.svcCtx.PasswordEncoder.Compare(user.PasswordHash, req.Password) {
-		l.Info("Invalid password for user", "username", req.Username)
+	if !l.svcCtx.PasswordEncoder.Compare(user.PasswordHash, req.Password) {
+		l.Info("Invalid password for user", ", username: ", req.Username)
 		return nil, types.ErrInvalidPassword
 	}
 
 	// 生成 JWT Pair
 	tokenPair, err := l.svcCtx.JWT.Generate(user.Id, user.Username)
 	if err != nil {
-		l.Errorf("Failed to generate JWT tokens: %v", err)
+		l.Errorf("Failed to generate JWT: %v", err)
 		return nil, types.ErrGenerateToken
 	}
 
+	// 更新最后登录时间
+	_, err = l.svcCtx.DB.ExecCtx(l.ctx, "UPDATE user SET last_login_at = NOW() WHERE id = ?", user.Id)
+	if err != nil {
+		l.Errorf("Failed to update last login time for user %d: %v", user.Id, err)
+	}
+
+	// 返回响应
 	resp = &types.LoginResp{
 		UserID:           user.PublicId,
 		Username:         user.Username,
