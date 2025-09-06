@@ -9,6 +9,10 @@
         "name": "rpc-server"
       },
       {
+        "path": "model",
+        "name": "model"
+      },
+      {
         "path": ".",
         "name": "root"
       }

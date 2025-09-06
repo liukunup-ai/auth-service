@@ -1,6 +1,6 @@
 CREATE TABLE user (
     id BIGINT UNSIGNED AUTO_INCREMENT COMMENT '自增主键，内部关联使用',
-    public_id VARCHAR(36) NOT NULL DEFAULT (UUID()) COMMENT '对外暴露的UserID，避免ID枚举攻击',
+    public_id VARCHAR(36) NOT NULL COMMENT '对外暴露的UserID，避免ID枚举攻击',
     nickname VARCHAR(100) DEFAULT NULL COMMENT '昵称',
     username VARCHAR(100) NOT NULL COMMENT '用户名',
     email VARCHAR(255) NOT NULL COMMENT '邮箱',

@@ -26,7 +26,7 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 }
 
 func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err error) {
-	l.Info("Login request received", "username", req.Username, "captchaId", req.CaptchaID)
+	l.Info("Login request received", ", username: ", req.Username, ", captchaId: ", req.CaptchaID)
 
 	// 校验验证码（如果开启了验证码）
 	if l.svcCtx.Config.Captcha.Enable {

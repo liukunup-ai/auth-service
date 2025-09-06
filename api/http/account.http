@@ -1,50 +1,38 @@
+@host = localhost
+@port = 7001
+@baseUrl = http://{{host}}:{{port}}/v1
+
 ### 获取验证码
-GET {{host}}/v1/auth/captcha
+GET {{baseUrl}}/auth/captcha
 Content-Type: application/json
-
-> {%
-    client.global.set("captchaId", response.body.captchaId);
-    client.log("验证码ID: " + response.body.captchaId);
-%}
-
-### 用户登录
-POST {{host}}/v1/auth/login
-Content-Type: application/json
-
-{
-  "username": "admin",
-  "password": "123456",
-  "captchaId": "{{captchaId}}",
-  "captchaAnswer": "1234"
-}
-
-> {%
-    client.global.set("accessToken", response.body.accessToken);
-    client.global.set("refreshToken", response.body.refreshToken);
-    client.log("登录成功，用户ID: " + response.body.userId);
-    client.log("Access Token: " + response.body.accessToken);
-%}
 
 ### 用户注册
-POST {{host}}/v1/auth/register
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "newuser",
-  "password": "password123",
-  "email": "newuser@example.com",
-  "phone": "13800138000",
-  "nickname": "新用户",
-  "captchaId": "{{captchaId}}",
-  "captchaAnswer": "1234"
+  "username": "testuser",
+  "password": "test#123456",
+  "email": "testuser@example.com",
+  "phone": "13800001234",
+  "nickname": "测试用户",
+  "captchaId": "RvvEmfFOF193c9U3u0z7",
+  "captchaAnswer": "645203"
 }
 
-> {%
-    client.log("注册成功，用户ID: " + response.body.userId);
-%}
+### 用户登录
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "test#123456",
+  "captchaId": "0fVms9nAvuJNUOsDgrY3",
+  "captchaAnswer": "716352"
+}
 
 ### 刷新令牌
-POST {{host}}/v1/auth/refresh
+POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
 
 {
@@ -58,7 +46,7 @@ Content-Type: application/json
 %}
 
 ### 验证令牌
-POST {{host}}/v1/auth/verify
+POST {{baseUrl}}/auth/verify
 Content-Type: application/json
 
 {
@@ -74,7 +62,7 @@ Content-Type: application/json
 %}
 
 ### 重置密码
-POST {{host}}/v1/auth/password/reset
+POST {{baseUrl}}/auth/password/reset
 Content-Type: application/json
 
 {
@@ -89,7 +77,7 @@ Content-Type: application/json
 %}
 
 ### 登出 (需要认证)
-POST {{host}}/v1/auth/logout
+POST {{baseUrl}}/auth/logout
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -105,7 +93,7 @@ Authorization: Bearer {{accessToken}}
 %}
 
 ### 修改密码 (需要认证)
-PUT {{host}}/v1/auth/password/change
+PUT {{baseUrl}}/auth/password/change
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 

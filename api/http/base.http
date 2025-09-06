@@ -2,3 +2,4 @@
 
 ### 健康检查
 GET {{host}}/healthz
+Content-Type: application/json

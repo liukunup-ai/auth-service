@@ -3,6 +3,10 @@ package svc
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"net"
+	"os"
+	"strconv"
 	"time"
 
 	"auth-service/api/internal/config"
@@ -11,6 +15,7 @@ import (
 
 	"github.com/mojocn/base64Captcha"
 	"github.com/redis/go-redis/v9"
+	"github.com/sony/sonyflake"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"github.com/zeromicro/go-zero/rest"
 )
@@ -23,6 +28,7 @@ type ServiceContext struct {
 	Captcha         *base64Captcha.Captcha
 	JWT             *JWT
 	AuthInterceptor rest.Middleware
+	Sonyflake       *sonyflake.Sonyflake
 	UserModel       model.UserModel
 }
 
@@ -55,6 +61,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Captcha:         captcha,
 		JWT:             NewJWT(c, rdb),
 		AuthInterceptor: middleware.NewAuthInterceptorMiddleware().Handle,
+		Sonyflake:       initSonyflake(),
 		UserModel:       model.NewUserModel(db),
 	}
 }
@@ -96,4 +103,53 @@ func initCaptcha(c config.Config, rdb redis.UniversalClient) (*base64Captcha.Cap
 		return nil, fmt.Errorf("failed to create captcha store")
 	}
 	return base64Captcha.NewCaptcha(driver, store), nil
+}
+
+func initSonyflake() *sonyflake.Sonyflake {
+	settings := sonyflake.Settings{
+		StartTime: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
+		MachineID: getMachineID,
+		CheckMachineID: func(id uint16) bool {
+			return id < 1024
+		},
+	}
+	return sonyflake.NewSonyflake(settings)
+}
+
+func getMachineID() (uint16, error) {
+	// 1. 从环境变量获取
+	if machineID := os.Getenv("SNOWFLAKE_MACHINE_ID"); machineID != "" {
+		if id, err := strconv.ParseUint(machineID, 10, 16); err == nil {
+			if id < 1024 {
+				fmt.Printf("从环境变量获取到 MachineID: %d\n", id)
+				return uint16(id), nil
+			}
+			fmt.Printf("环境变量 MachineID 超出范围: %d, 使用备用方案\n", id)
+		} else {
+			fmt.Printf("环境变量 MachineID 格式错误: %s, 使用备用方案\n", machineID)
+		}
+	}
+
+	// 2. 基于 IP 地址生成
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return 0, fmt.Errorf("获取网络接口失败: %v", err)
+	}
+	for _, addr := range addrs {
+		if ipNet, ok := addr.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
+			if ip := ipNet.IP.To4(); ip != nil {
+				// 使用 IP 地址的最后两个字节生成 MachineID
+				// 例如: 192.168.1.100 -> 1*256 + 100 = 356
+				machineID := (uint16(ip[2])<<8 + uint16(ip[3])) % 1024
+				fmt.Printf("基于 IP 地址生成 MachineID: %d\n", machineID)
+				return machineID, nil
+			}
+		}
+	}
+
+	// 3. 回退到随机数 (使用时间种子)
+	rand.New(rand.NewSource(time.Now().UnixNano()))
+	machineID := uint16(rand.Intn(1024))
+	fmt.Printf("使用随机数作为 MachineID: %d\n", machineID)
+	return machineID, nil
 }

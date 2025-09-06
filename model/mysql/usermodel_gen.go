@@ -132,14 +132,14 @@ func (m *defaultUserModel) FindOneByUsername(ctx context.Context, username strin
 }
 
 func (m *defaultUserModel) Insert(ctx context.Context, data *User) (sql.Result, error) {
-	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, userRowsExpectAutoSet)
-	ret, err := m.conn.ExecCtx(ctx, query, data.PublicId, data.Username, data.Email, data.EmailVerified, data.Phone, data.PhoneVerified, data.PasswordHash, data.PasswordSalt, data.MfaSecret, data.MfaEnabled, data.AccountStatus, data.FailedLoginAttempts, data.LockoutUntil, data.LastLoginAt, data.DeletedAt)
+	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, userRowsExpectAutoSet)
+	ret, err := m.conn.ExecCtx(ctx, query, data.PublicId, data.Nickname, data.Username, data.Email, data.EmailVerified, data.Phone, data.PhoneVerified, data.PasswordHash, data.PasswordSalt, data.MfaSecret, data.MfaEnabled, data.AccountStatus, data.FailedLoginAttempts, data.LockoutUntil, data.LastLoginAt, data.DeletedAt)
 	return ret, err
 }
 
 func (m *defaultUserModel) Update(ctx context.Context, newData *User) error {
 	query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, userRowsWithPlaceHolder)
-	_, err := m.conn.ExecCtx(ctx, query, newData.PublicId, newData.Username, newData.Email, newData.EmailVerified, newData.Phone, newData.PhoneVerified, newData.PasswordHash, newData.PasswordSalt, newData.MfaSecret, newData.MfaEnabled, newData.AccountStatus, newData.FailedLoginAttempts, newData.LockoutUntil, newData.LastLoginAt, newData.DeletedAt, newData.Id)
+	_, err := m.conn.ExecCtx(ctx, query, newData.PublicId, newData.Nickname, newData.Username, newData.Email, newData.EmailVerified, newData.Phone, newData.PhoneVerified, newData.PasswordHash, newData.PasswordSalt, newData.MfaSecret, newData.MfaEnabled, newData.AccountStatus, newData.FailedLoginAttempts, newData.LockoutUntil, newData.LastLoginAt, newData.DeletedAt, newData.Id)
 	return err
 }
 

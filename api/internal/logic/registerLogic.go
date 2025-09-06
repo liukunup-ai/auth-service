@@ -3,6 +3,8 @@ package logic
 import (
 	"context"
 	"database/sql"
+	"strconv"
+	"time"
 
 	"auth-service/api/internal/svc"
 	"auth-service/api/internal/types"
@@ -95,14 +97,25 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 		return nil, types.ErrPhoneTaken
 	}
 
+	// 生成 PublicId
+	nextID, err := l.svcCtx.Sonyflake.NextID()
+	if err != nil {
+		l.Errorf("Failed to generate PublicId: %v", err)
+		return nil, types.ErrDatabaseError
+	}
+
 	// 构建用户模型
+	now := time.Now()
 	newUser := &model.User{
+		PublicId:      strconv.FormatUint(nextID, 10),
 		Username:      req.Username,
 		Email:         req.Email,
 		Phone:         sql.NullString{String: req.Phone, Valid: req.Phone != ""},
 		Nickname:      sql.NullString{String: req.Nickname, Valid: req.Nickname != ""},
 		PasswordHash:  l.svcCtx.PasswordEncoder.Hash(req.Password),
 		AccountStatus: model.UserStatusActive,
+		CreatedAt:     now,
+		UpdatedAt:     now,
 	}
 
 	// 插入数据库
