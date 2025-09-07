@@ -25,10 +25,10 @@ const (
 
 // 令牌对
 type TokenPair struct {
-	AccessToken   string `json:"accessToken"`
-	AccessExpire  int64  `json:"accessExpire"`
-	RefreshToken  string `json:"refreshToken"`
-	RefreshExpire int64  `json:"refreshExpire"`
+	AccessToken      string `json:"accessToken"`
+	AccessExpiresAt  int64  `json:"accessExpiresAt"`
+	RefreshToken     string `json:"refreshToken"`
+	RefreshExpiresAt int64  `json:"refreshExpiresAt"`
 }
 
 type CustomClaims struct {
@@ -66,22 +66,22 @@ func (j *JWT) Generate(userID uint64, username string) (*TokenPair, error) {
 	tokenID := generateTokenID()
 
 	// 生成 Access Token
-	accessToken, accessExpire, err := j.generateToken(userID, username, tokenID, AccessToken)
+	accessToken, accessExpiresAt, err := j.generateToken(userID, username, tokenID, AccessToken)
 	if err != nil {
 		return nil, err
 	}
 
 	// 生成 Refresh Token
-	refreshToken, refreshExpire, err := j.generateToken(userID, username, tokenID, RefreshToken)
+	refreshToken, refreshExpiresAt, err := j.generateToken(userID, username, tokenID, RefreshToken)
 	if err != nil {
 		return nil, err
 	}
 
 	return &TokenPair{
-		AccessToken:   accessToken,
-		AccessExpire:  accessExpire,
-		RefreshToken:  refreshToken,
-		RefreshExpire: refreshExpire,
+		AccessToken:      accessToken,
+		AccessExpiresAt:  accessExpiresAt,
+		RefreshToken:     refreshToken,
+		RefreshExpiresAt: refreshExpiresAt,
 	}, nil
 }
 

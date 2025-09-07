@@ -27,17 +27,15 @@ func (l *RefreshTokenLogic) RefreshToken(req *types.RefreshTokenReq) (resp *type
 	// 刷新
 	tokenPair, err := l.svcCtx.JWT.Refresh(req.RefreshToken)
 	if err != nil {
-		return &types.RefreshTokenResp{
-			AccessToken:  "",
-			RefreshToken: "",
-			ExpiresIn:    0,
-		}, err
+		return &types.RefreshTokenResp{}, err
 	}
 
 	resp = &types.RefreshTokenResp{
-		AccessToken:  tokenPair.AccessToken,
-		RefreshToken: tokenPair.RefreshToken,
-		ExpiresIn:    tokenPair.AccessExpire,
+		AccessToken:      tokenPair.AccessToken,
+		AccessExpiresAt:  tokenPair.AccessExpiresAt,
+		RefreshToken:     tokenPair.RefreshToken,
+		RefreshExpiresAt: tokenPair.RefreshExpiresAt,
+		TokenType:        "Bearer",
 	}
 	return resp, nil
 }

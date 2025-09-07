@@ -43,9 +43,9 @@ type LoginResp struct {
 	Username         string `json:"username"`                   // 用户名
 	Email            string `json:"email,optional"`             // 邮箱
 	AccessToken      string `json:"accessToken"`                // 访问令牌
-	AccessExpiresIn  int64  `json:"accessExpiresIn"`            // 访问令牌的有效期（秒）
+	AccessExpiresAt  int64  `json:"accessExpiresAt"`            // 访问令牌的过期时间（秒）
 	RefreshToken     string `json:"refreshToken"`               // 刷新令牌
-	RefreshExpiresIn int64  `json:"refreshExpiresIn"`           // 刷新令牌的有效期（秒）
+	RefreshExpiresAt int64  `json:"refreshExpiresAt"`           // 刷新令牌的过期时间（秒）
 	TokenType        string `json:"tokenType" default:"Bearer"` // 令牌类型
 }
 
@@ -59,9 +59,11 @@ type RefreshTokenReq struct {
 }
 
 type RefreshTokenResp struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-	ExpiresIn    int64  `json:"expiresIn"`
+	AccessToken      string `json:"accessToken"`                // 访问令牌
+	AccessExpiresAt  int64  `json:"accessExpiresAt"`            // 访问令牌的过期时间（秒）
+	RefreshToken     string `json:"refreshToken"`               // 刷新令牌
+	RefreshExpiresAt int64  `json:"refreshExpiresAt"`           // 刷新令牌的过期时间（秒）
+	TokenType        string `json:"tokenType" default:"Bearer"` // 令牌类型
 }
 
 type RegisterReq struct {
@@ -83,19 +85,20 @@ type RegisterResp struct {
 
 type ResetPasswordReq struct {
 	Email         string `json:"email" validate:"required,email"`
-	CaptchaID     string `json:"captchaId" validate:"required"`
-	CaptchaAnswer string `json:"captchaAnswer" validate:"required"`
-	NewPassword   string `json:"newPassword" validate:"required,min=6,max=30"`
+	CaptchaID     string `json:"captchaId,optional"`
+	CaptchaAnswer string `json:"captchaAnswer,optional"`
 }
 
 type VerifyTokenReq struct {
-	Token string `json:"token" validate:"required"`
+	AccessToken string `json:"accessToken" validate:"required"`
 }
 
 type VerifyTokenResp struct {
 	IsValid   bool   `json:"isValid"`
+	Message   string `json:"message,optional"`
 	UserID    string `json:"userId,optional"`
 	Username  string `json:"username,optional"`
 	ExpiresAt int64  `json:"expiresAt,optional"`
-	Message   string `json:"message,optional"`
+	TokenID   string `json:"tokenId,optional"`
+	TokenType string `json:"tokenType" default:"Bearer"`
 }

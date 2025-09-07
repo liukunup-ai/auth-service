@@ -123,9 +123,9 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 		Username:         user.Username,
 		Email:            user.Email,
 		AccessToken:      tokenPair.AccessToken,
-		AccessExpiresIn:  tokenPair.AccessExpire,
+		AccessExpiresAt:  tokenPair.AccessExpiresAt,
 		RefreshToken:     tokenPair.RefreshToken,
-		RefreshExpiresIn: tokenPair.RefreshExpire,
+		RefreshExpiresAt: tokenPair.RefreshExpiresAt,
 		TokenType:        "Bearer",
 	}
 	return resp, nil

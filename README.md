@@ -1,5 +1,62 @@
 # Common Auth Service
 
+一个简单的认证服务
+
+## 🔐 功能模块
+
+- 验证码
+- 注册
+- 登录/登出
+- 令牌刷新
+- 令牌验证
+- 修改密码
+- 邮箱重置密码
+
+基础认证接口
+
+用户管理接口
+
+获取用户信息
+
+修改个人信息
+
+安全验证接口
+
+权限验证
+
+角色查询
+
+管理接口（需要管理员权限）
+
+用户列表
+
+用户状态管理
+
+角色分配
+
+## 🛡️ 安全特性
+
+- 支持`验证码`
+- 支持`JWT`认证（实现了`accessToken`+`refreshToken`双Token滚动刷新机制）
+- 支持`密码强度验证`
+- 支持`xx`
+
+
+
+## 🚀 使用方式
+保存为 auth.api 文件
+
+使用 goctl 生成代码：
+
+bash
+goctl api go -api auth.api -dir . -style goZero
+这个设计考虑了生产环境的需求，包括安全验证、权限管理和可扩展性。
+
+
+## 技术栈
+
+- [go-zero](https://go-zero.dev/)
+
 ## 常用命令
 
 ```shell
@@ -63,83 +120,3 @@ goctl model mysql ddl --src ./model/mysql/user.sql --dir ./model/mysql
 ├── LICENSE               #
 └── README.md             #
 ```
-
-
-
-
-
-## go-zero
-
-```
-go version
-
-go install github.com/zeromicro/go-zero/tools/goctl@latest
-
-goctl --version
-```
-
-
-
-
-
-
-
-
-
-
-xiaoxin-technology.goctl
-
-🔐 主要功能模块
-基础认证接口
-
-登录/登出
-
-注册
-
-令牌刷新
-
-令牌验证
-
-用户管理接口
-
-获取用户信息
-
-修改个人信息
-
-修改密码
-
-重置密码
-
-安全验证接口
-
-验证码获取
-
-权限验证
-
-角色查询
-
-管理接口（需要管理员权限）
-
-用户列表
-
-用户状态管理
-
-角色分配
-
-🛡️ 安全特性
-JWT 令牌认证
-
-验证码保护
-
-密码强度验证
-
-权限层级控制
-
-🚀 使用方式
-保存为 auth.api 文件
-
-使用 goctl 生成代码：
-
-bash
-goctl api go -api auth.api -dir . -style goZero
-这个设计考虑了生产环境的需求，包括安全验证、权限管理和可扩展性。

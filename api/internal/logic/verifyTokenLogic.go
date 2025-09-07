@@ -25,11 +25,11 @@ func NewVerifyTokenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Verif
 
 func (l *VerifyTokenLogic) VerifyToken(req *types.VerifyTokenReq) (resp *types.VerifyTokenResp, err error) {
 	// 验证令牌
-	claims, err := l.svcCtx.JWT.VerifyAccessToken(req.Token)
+	claims, err := l.svcCtx.JWT.VerifyAccessToken(req.AccessToken)
 	if err != nil {
 		return &types.VerifyTokenResp{
 			IsValid: false,
-			Message: err.Error(),
+			Message: "令牌无效或已过期",
 		}, err
 	}
 
@@ -44,9 +44,12 @@ func (l *VerifyTokenLogic) VerifyToken(req *types.VerifyTokenReq) (resp *types.V
 
 	resp = &types.VerifyTokenResp{
 		IsValid:   true,
+		Message:   "令牌有效",
 		UserID:    user.PublicId,
-		Username:  claims.Username,
+		Username:  user.Username,
 		ExpiresAt: claims.ExpiresAt,
+		TokenID:   claims.TokenID,
+		TokenType: "Bearer",
 	}
 	return resp, nil
 }

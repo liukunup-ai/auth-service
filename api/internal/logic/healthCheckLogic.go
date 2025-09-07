@@ -27,7 +27,7 @@ func (l *HealthCheckLogic) HealthCheck() (resp *types.BaseResponse, err error) {
 	// 嗯 还活着
 	resp = &types.BaseResponse{
 		Code:    200,
-		Message: "ok",
+		Message: "OK",
 	}
 	return resp, nil
 }
