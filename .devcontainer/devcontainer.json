@@ -1,0 +1,58 @@
+{
+  "name": "Dev Stack",
+  "dockerComposeFile": "docker-compose.yaml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "remoteUser": "vscode",
+  "forwardPorts": [
+    3306,
+    6379
+  ],
+  "containerEnv": {
+    "MYSQL_PORT": "3306",
+    "MYSQL_ROOT_PASSWORD": "your_secure_root_password_here",
+    "MYSQL_DATABASE": "testing",
+    "MYSQL_USER": "testing",
+    "MYSQL_PASSWORD": "your_secure_password_here",
+    "REDIS_PORT": "6379",
+    "REDIS_PASSWORD": "your_secure_redis_password_here"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Chinese (Traditional) Language Pack
+        "MS-CEINTL.vscode-language-pack-zh-hant",
+        // GitHub Copilot
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        // Git
+        "mhutchie.git-graph",
+        "donjayamanne.githistory",
+        // Style
+        "esbenp.prettier-vscode",
+        "aaron-bond.better-comments",
+        "vscode-icons-team.vscode-icons",
+        // Container & DevOps
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-docker",
+        // Others
+        "humao.rest-client",
+        "redhat.vscode-yaml",
+        "golang.go",
+        "xiaoxin-technology.goctl",
+        "exiasr.hadolint",
+        "ms-vscode.makefile-tools",
+        "ms-vscode-remote.remote-wsl",
+        "zxh404.vscode-proto3"
+      ],
+      "settings": {
+        "workbench.colorTheme": "Visual Studio Dark",
+        "go.toolsEnvVars": {
+          "GO111MODULE": "on",
+          "GOPROXY": "https://goproxy.cn,direct",
+          "GONOPROXY": "none;"
+        }
+      }
+    }
+  }
+}
