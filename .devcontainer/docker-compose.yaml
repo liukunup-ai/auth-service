@@ -8,6 +8,7 @@ volumes:
   mysql-data:
 
 services:
+
   # Service
   app:
     build:
@@ -28,7 +29,7 @@ services:
 
   # MySQL https://dev.mysql.com/doc/refman/8.4/en/
   mysql:
-    image: docker.io/mysql:8
+    image: docker.io/mysql:8.4.6
     container_name: mysql
     restart: unless-stopped
     ports:
@@ -45,7 +46,7 @@ services:
 
   # Redis https://redis.io/docs/latest/operate/oss_and_stack/
   redis:
-    image: docker.io/redis:8
+    image: docker.io/redis:8.2.1
     container_name: redis
     restart: unless-stopped
     command: redis-server --requirepass ${REDIS_PASSWORD:?password is required}
