@@ -18,6 +18,7 @@
       }
     ],
     "settings": {
+      "workbench.colorTheme": "Visual Studio Dark",
       "go.toolsEnvVars": {
         "GO111MODULE": "on",
         "GOPROXY": "https://goproxy.cn,direct",
@@ -26,14 +27,23 @@
     },
     "extensions": {
       "recommendations": [
+        // Chinese (Traditional) Language Pack
+        "MS-CEINTL.vscode-language-pack-zh-hant",
+        // GitHub Copilot
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        // Git
         "mhutchie.git-graph",
         "donjayamanne.githistory",
+        // Style
         "esbenp.prettier-vscode",
         "aaron-bond.better-comments",
-        "humao.rest-client",
         "vscode-icons-team.vscode-icons",
+        // Container & DevOps
         "ms-azuretools.vscode-containers",
         "ms-azuretools.vscode-docker",
+        // Others
+        "humao.rest-client",
         "redhat.vscode-yaml",
         "golang.go",
         "xiaoxin-technology.goctl",
