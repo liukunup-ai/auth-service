@@ -34,11 +34,10 @@
         // Others
         "humao.rest-client",
         "redhat.vscode-yaml",
+        "ms-vscode.makefile-tools",
+        // Go
         "golang.go",
         "xiaoxin-technology.goctl",
-        "exiasr.hadolint",
-        "ms-vscode.makefile-tools",
-        "ms-vscode-remote.remote-wsl",
         "zxh404.vscode-proto3"
       ],
       "settings": {
@@ -50,11 +49,5 @@
         }
       }
     }
-  },
-  "features": {
-    "ghcr.io/devcontainers/features/common-utils:2": {},
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/git-lfs:1": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   }
 }
