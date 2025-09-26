@@ -1,12 +1,8 @@
 {
   "name": "Dev Stack",
-  "dockerComposeFile": "docker-compose.yaml",
-  "service": "app",
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-  "remoteUser": "vscode",
+  "image": "mcr.microsoft.com/devcontainers/go:1.25-trixie",
   "forwardPorts": [
-    3306,
-    6379
+    7001
   ],
   "containerEnv": {
     "MYSQL_PORT": "3306",
