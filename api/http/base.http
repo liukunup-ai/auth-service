@@ -1,5 +1,0 @@
-@host = http://localhost:7001
-
-### 健康检查
-GET {{host}}/healthz
-Content-Type: application/json

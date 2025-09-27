@@ -4,20 +4,20 @@
   "forwardPorts": [
     7001
   ],
-  "containerEnv": {
-    "MYSQL_PORT": "3306",
-    "MYSQL_ROOT_PASSWORD": "your_secure_root_password_here",
-    "MYSQL_DATABASE": "testing",
-    "MYSQL_USER": "testing",
-    "MYSQL_PASSWORD": "your_secure_password_here",
-    "REDIS_PORT": "6379",
-    "REDIS_PASSWORD": "your_secure_redis_password_here"
-  },
   "customizations": {
     "vscode": {
+      "settings": {
+        "workbench.colorTheme": "Visual Studio Dark",
+        "workbench.iconTheme": "vscode-icons",
+        "go.toolsEnvVars": {
+          "GO111MODULE": "on",
+          "GOPROXY": "https://goproxy.cn,direct",
+          "GONOPROXY": "none"
+        }
+      },
       "extensions": [
-        // Chinese (Traditional) Language Pack
-        "MS-CEINTL.vscode-language-pack-zh-hant",
+        // Chinese Language Pack
+        "MS-CEINTL.vscode-language-pack-zh-hans",
         // GitHub Copilot
         "GitHub.copilot",
         "GitHub.copilot-chat",
@@ -28,26 +28,19 @@
         "esbenp.prettier-vscode",
         "aaron-bond.better-comments",
         "vscode-icons-team.vscode-icons",
-        // Container & DevOps
-        "ms-azuretools.vscode-containers",
-        "ms-azuretools.vscode-docker",
-        // Others
-        "humao.rest-client",
-        "redhat.vscode-yaml",
-        "ms-vscode.makefile-tools",
         // Go
         "golang.go",
         "xiaoxin-technology.goctl",
-        "zxh404.vscode-proto3"
-      ],
-      "settings": {
-        "workbench.colorTheme": "Visual Studio Dark",
-        "go.toolsEnvVars": {
-          "GO111MODULE": "on",
-          "GOPROXY": "https://goproxy.cn,direct",
-          "GONOPROXY": "none;"
-        }
-      }
+        "zxh404.vscode-proto3",
+        // Tools
+        "humao.rest-client",
+        "redhat.vscode-yaml",
+        "ms-vscode.makefile-tools",
+        // Database
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-mysql"
+      ]
     }
-  }
+  },
+  "postCreateCommand": "bash setup.sh"
 }
