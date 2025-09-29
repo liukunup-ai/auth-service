@@ -35,8 +35,7 @@ services:
       - database
       - mysql
     healthcheck:
-      test:
-        [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD" ]
+      test: ["CMD", "sh", "-c", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD 2>/dev/null | grep -q alive"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -51,7 +50,7 @@ services:
     environment:
       PMA_ARBITRARY: ${PMA_ARBITRARY:-1}
       PMA_HOST: mysql
-      PMA_PORT: ${MYSQL_PORT:-3306}:3306
+      PMA_PORT: 3306
     networks:
       - dev-stack
     depends_on:
@@ -83,7 +82,7 @@ services:
       - cache
       - redis
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "$$REDIS_PASSWORD", "ping"]
+      test: ["CMD", "sh", "-c", "REDISCLI_AUTH=$$REDIS_PASSWORD redis-cli ping | grep -q PONG"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -99,7 +98,7 @@ services:
       HTTP_USER: ${REDIS_COMMANDER_HTTP_USERNAME:-admin}
       HTTP_PASSWORD: ${REDIS_COMMANDER_HTTP_PASSWORD:?redis commander password is required}
       REDIS_HOST: redis
-      REDIS_PORT: ${REDIS_PORT:-6379}:6379
+      REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:?redis password is required}
     networks:
       - dev-stack
