@@ -1,6 +1,8 @@
+# Dev Stack
+
 networks:
   dev-stack:
-    name: dev-stack
+    name: ${NETWORK_NAME}
     driver: bridge
 
 volumes:
@@ -9,13 +11,15 @@ volumes:
 
 services:
 
-  # MySQL https://dev.mysql.com/doc/refman/8.4/en/
+  # MySQL
+  # https://dev.mysql.com/doc/refman/8.4/en/
   mysql:
-    image: docker.io/mysql:8.4.6
+    image: ${REGISTRY:-docker.io}/${MYSQL_IMAGE:-mysql:latest}
     container_name: mysql
+    hostname: mysql
     restart: unless-stopped
     ports:
-      - "${MYSQL_PORT:-3306}:3306"
+      - ${MYSQL_PORT:-3306}:3306
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?root password is required}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-testing}
@@ -25,16 +29,85 @@ services:
       - mysql-data:/var/lib/mysql
     networks:
       - dev-stack
+    profiles:
+      - all
+      - base
+      - database
+      - mysql
+    healthcheck:
+      test:
+        [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Redis https://redis.io/docs/latest/operate/oss_and_stack/
-  redis:
-    image: docker.io/redis:8.2.1
-    container_name: redis
+  phpmyadmin:
+    image: ${REGISTRY:-docker.io}/${PMA_IMAGE:-phpmyadmin/phpmyadmin:latest}
+    container_name: phpmyadmin
+    hostname: phpmyadmin
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD:?password is required}
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - ${PMA_PORT:-80}:80
+    environment:
+      PMA_ARBITRARY: ${PMA_ARBITRARY:-1}
+      PMA_HOST: mysql
+      PMA_PORT: ${MYSQL_PORT:-3306}:3306
+    networks:
+      - dev-stack
+    depends_on:
+      - mysql
+    profiles:
+      - all
+      - base
+      - database
+      - mysql
+      - phpmyadmin
+
+  # Redis
+  # https://redis.io/docs/latest/operate/oss_and_stack/
+  redis:
+    image: ${REGISTRY:-docker.io}/${REDIS_IMAGE:-redis:latest}
+    container_name: redis
+    hostname: redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:?redis password is required}
+    ports:
+      - ${REDIS_PORT:-6379}:6379
     volumes:
       - redis-data:/data
     networks:
       - dev-stack
+    profiles:
+      - all
+      - base
+      - cache
+      - redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "$$REDIS_PASSWORD", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis-commander:
+    image: ${REGISTRY:-docker.io}/${REDIS_COMMANDER_IMAGE:-rediscommander/redis-commander:latest}
+    container_name: redis-commander
+    hostname: redis-commander
+    restart: unless-stopped
+    ports:
+      - ${REDIS_COMMANDER_PORT:-8081}:8081
+    environment:
+      HTTP_USER: ${REDIS_COMMANDER_HTTP_USERNAME:-admin}
+      HTTP_PASSWORD: ${REDIS_COMMANDER_HTTP_PASSWORD:?redis commander password is required}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6379}:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?redis password is required}
+    networks:
+      - dev-stack
+    depends_on:
+      - redis
+    profiles:
+      - all
+      - base
+      - cache
+      - redis
+      - redis-commander
