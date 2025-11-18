@@ -1,6 +1,6 @@
 .PHONY: gen
 build:
-	goctl api go --api ./api/dsl/auth.api --dir ./api/ --style goZero
+	goctl api go --api ./dsl/auth.api --dir ./ --style goZero
 	goctl model mysql ddl --src ./model/mysql/user.sql --dir ./model/mysql
 
 .PHONY: build

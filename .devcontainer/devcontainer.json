@@ -16,11 +16,6 @@
         }
       },
       "extensions": [
-        // Chinese Language Pack
-        "MS-CEINTL.vscode-language-pack-zh-hans",
-        // GitHub Copilot
-        "GitHub.copilot",
-        "GitHub.copilot-chat",
         // Git
         "mhutchie.git-graph",
         "donjayamanne.githistory",

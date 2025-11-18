@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"auth-service/internal/config"
-	"auth-service/internal/middleware"
+	middleware "auth-service/internal/middleware"
 	model "auth-service/model/mysql"
 
 	"github.com/mojocn/base64Captcha"
@@ -53,14 +53,30 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		panic(fmt.Sprintf("failed to initialize captcha: %v", err))
 	}
 
+	// 创建JWT服务
+	jwtService := NewJWT(c, rdb)
+	
+	// 创建中间件并设置tokenValidator
+	authInterceptor := middleware.NewAuthInterceptorMiddleware()
+	authInterceptor.SetTokenValidator(func(tokenString string) (middleware.Claims, error) {
+		// 验证访问令牌
+		claims, err := jwtService.VerifyAccessToken(tokenString)
+		if err != nil {
+			return nil, err
+		}
+		
+		// 适配CustomClaims到middleware.Claims接口
+		return &JwtClaimsAdapter{claims: claims}, nil
+	})
+	
 	return &ServiceContext{
 		Config:          c,
 		DB:              db,
 		Redis:           rdb,
 		PasswordEncoder: &PasswordEncoder{},
 		Captcha:         captcha,
-		JWT:             NewJWT(c, rdb),
-		AuthInterceptor: middleware.NewAuthInterceptorMiddleware().Handle,
+		JWT:             jwtService,
+		AuthInterceptor: authInterceptor.Handle,
 		Sonyflake:       initSonyflake(),
 		UserModel:       model.NewUserModel(db),
 	}
@@ -114,6 +130,21 @@ func initSonyflake() *sonyflake.Sonyflake {
 		},
 	}
 	return sonyflake.NewSonyflake(settings)
+}
+
+// JwtClaimsAdapter 适配CustomClaims到middleware.Claims接口
+type JwtClaimsAdapter struct {
+	claims *CustomClaims
+}
+
+// GetUserID 获取用户ID
+func (a *JwtClaimsAdapter) GetUserID() int64 {
+	return int64(a.claims.UserID)
+}
+
+// VerifyExpiresAt 验证令牌是否过期
+func (a *JwtClaimsAdapter) VerifyExpiresAt() bool {
+	return a.claims.StandardClaims.ExpiresAt > time.Now().Unix()
 }
 
 func getMachineID() (uint16, error) {

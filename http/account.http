@@ -1,6 +1,16 @@
 @host = localhost
 @port = 7001
-@baseUrl = http://{{host}}:{{port}}/v1
+@baseUrl = http://{{host}}:{{port}}/api/v1
+
+# 默认变量值
+@captchaId = "MGsuVETAAYY0NStzCeoO"
+@captchaAnswer = "326401"
+@username = "testuser"
+@password = "Test#123456"
+@email = "testuser@example.com"
+@accessToken = ""
+@refreshToken = ""
+@userId = "1"
 
 ### 获取验证码
 GET {{baseUrl}}/auth/captcha
@@ -11,24 +21,35 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "testuser",
-  "password": "test#123456",
-  "email": "testuser@example.com",
+  "username": {{username}},
+  "password": {{password}},
+  "email": {{email}},
   "phone": "13800001234",
   "nickname": "测试用户",
-  "captchaId": "RvvEmfFOF193c9U3u0z7",
-  "captchaAnswer": "645203"
+  "captchaId": {{captchaId}},
+  "captchaAnswer": {{captchaAnswer}}
 }
 
-### 用户登录
+### 用户登录 - 使用用户名
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "username": "testuser",
-  "password": "test#123456",
-  "captchaId": "sYdcVoHvFrmgjyfAt9eH",
-  "captchaAnswer": "959112"
+  "username": "{{username}}",
+  "password": "{{password}}",
+  "captchaId": "{{captchaId}}",
+  "captchaAnswer": "{{captchaAnswer}}"
+}
+
+### 用户登录 - 使用邮箱
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{email}}",
+  "password": "{{password}}",
+  "captchaId": "{{captchaId}}",
+  "captchaAnswer": "{{captchaAnswer}}"
 }
 
 ### 刷新令牌
@@ -39,12 +60,6 @@ Content-Type: application/json
   "refreshToken": "{{refreshToken}}"
 }
 
-> {%
-    client.global.set("accessToken", response.body.accessToken);
-    client.global.set("refreshToken", response.body.refreshToken);
-    client.log("令牌刷新成功");
-%}
-
 ### 验证令牌
 POST {{baseUrl}}/auth/verify
 Content-Type: application/json
@@ -53,28 +68,20 @@ Content-Type: application/json
   "token": "{{accessToken}}"
 }
 
-> {%
-    if (response.body.isValid) {
-        client.log("令牌有效，用户: " + response.body.username);
-    } else {
-        client.log("令牌无效: " + response.body.message);
-    }
-%}
-
-### 重置密码
+### 重置密码 - 发送重置请求
 POST {{baseUrl}}/auth/password/reset
 Content-Type: application/json
 
 {
-  "email": "user@example.com",
+  "email": "{{email}}",
   "captchaId": "{{captchaId}}",
-  "captchaAnswer": "1234",
-  "newPassword": "newpassword123"
+  "captchaAnswer": "{{captchaAnswer}}"
 }
 
-> {%
-    client.log("密码重置请求已发送");
-%}
+### 获取用户资料 (需要认证)
+GET {{baseUrl}}/auth/profile
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 ### 登出 (需要认证)
 POST {{baseUrl}}/auth/logout
@@ -86,22 +93,36 @@ Authorization: Bearer {{accessToken}}
   "refreshToken": "{{refreshToken}}"
 }
 
-> {%
-    client.log("登出成功");
-    client.global.clear("accessToken");
-    client.global.clear("refreshToken");
-%}
-
 ### 修改密码 (需要认证)
 PUT {{baseUrl}}/auth/password/change
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "oldPassword": "oldpassword",
-  "newPassword": "newpassword123"
+  "oldPassword": "{{password}}",
+  "newPassword": "NewPass#123456"
 }
 
-> {%
-    client.log("密码修改成功");
-%}
+### 检查权限 (需要认证)
+POST {{baseUrl}}/auth/permission/check
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "userId": {{userId}},
+  "permission": "user:read"
+}
+
+### 测试接口 - 使用无效Token
+GET {{baseUrl}}/auth/profile
+Content-Type: application/json
+Authorization: Bearer invalid_token_here
+
+### 测试接口 - 缺少参数
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "",
+  "password": ""
+}

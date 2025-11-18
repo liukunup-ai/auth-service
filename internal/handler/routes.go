@@ -37,26 +37,31 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			},
 			{
 				Method:  http.MethodPost,
+				Path:    "/auth/logout",
+				Handler: LogoutHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
 				Path:    "/auth/password/reset",
 				Handler: ResetPasswordHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodPost,
+				Path:    "/auth/password/reset/confirm",
+				Handler: ConfirmPasswordHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
 				Path:    "/auth/refresh",
-				Handler: RefreshTokenHandler(serverCtx),
+				Handler: RefreshHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodPost,
 				Path:    "/auth/register",
 				Handler: RegisterHandler(serverCtx),
 			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/auth/verify",
-				Handler: VerifyTokenHandler(serverCtx),
-			},
 		},
-		rest.WithPrefix("/v1"),
+		rest.WithPrefix("/api/v1"),
 		rest.WithTimeout(3000*time.Millisecond),
 	)
 
@@ -65,9 +70,9 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Middleware{serverCtx.AuthInterceptor},
 			[]rest.Route{
 				{
-					Method:  http.MethodPost,
-					Path:    "/auth/logout",
-					Handler: LogoutHandler(serverCtx),
+					Method:  http.MethodGet,
+					Path:    "/auth/me",
+					Handler: GetProfileHandler(serverCtx),
 				},
 				{
 					Method:  http.MethodPut,
@@ -77,23 +82,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			}...,
 		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
-		rest.WithPrefix("/v1"),
-		rest.WithTimeout(3000*time.Millisecond),
-	)
-
-	server.AddRoutes(
-		rest.WithMiddlewares(
-			[]rest.Middleware{serverCtx.AuthInterceptor},
-			[]rest.Route{
-				{
-					Method:  http.MethodPost,
-					Path:    "/auth/permission/check",
-					Handler: CheckPermissionHandler(serverCtx),
-				},
-			}...,
-		),
-		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
-		rest.WithPrefix("/v1"),
+		rest.WithPrefix("/api/v1"),
 		rest.WithTimeout(3000*time.Millisecond),
 	)
 }

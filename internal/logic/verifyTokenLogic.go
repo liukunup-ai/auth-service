@@ -24,32 +24,18 @@ func NewVerifyTokenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Verif
 }
 
 func (l *VerifyTokenLogic) VerifyToken(req *types.VerifyTokenReq) (resp *types.VerifyTokenResp, err error) {
-	// 验证令牌
-	claims, err := l.svcCtx.JWT.VerifyAccessToken(req.AccessToken)
+	// 验证访问令牌
+	claims, err := l.svcCtx.JWT.VerifyAccessToken(req.Token)
 	if err != nil {
 		return &types.VerifyTokenResp{
-			IsValid: false,
-			Message: "令牌无效或已过期",
-		}, err
-	}
-
-	// 查询用户信息
-	user, err := l.svcCtx.UserModel.FindOne(l.ctx, claims.UserID)
-	if err != nil {
-		return &types.VerifyTokenResp{
-			IsValid: false,
-			Message: "用户不存在",
+			Valid: false,
 		}, nil
 	}
-
-	resp = &types.VerifyTokenResp{
-		IsValid:   true,
-		Message:   "令牌有效",
-		UserID:    user.PublicId,
-		Username:  user.Username,
+	
+	return &types.VerifyTokenResp{
+		Valid:     true,
+		UserID:    int64(claims.UserID),
+		Username:  claims.Username,
 		ExpiresAt: claims.ExpiresAt,
-		TokenID:   claims.TokenID,
-		TokenType: "Bearer",
-	}
-	return resp, nil
+	}, nil
 }

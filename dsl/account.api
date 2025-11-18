@@ -63,15 +63,12 @@ type (
 
 	// 重置密码
 	ResetPasswordReq {
-		Email         string `json:"email" validate:"required,email"`
-		CaptchaID     string `json:"captchaId,optional"`
-		CaptchaAnswer string `json:"captchaAnswer,optional"`
+		Email string `json:"email" validate:"required,email"` // 用户注册时填写的邮箱
 	}
 
-	// 密码重置确认请求
-	ConfirmResetReq {
-		ResetToken       string `json:"resetToken" validate:"required"`               // 从邮件中获取的重置令牌
-		NewPassword      string `json:"newPassword" validate:"required,min=6,max=30"` // 新密码
+	// 重设密码
+	ConfirmPasswordReq {
+		NewPassword string `json:"newPassword" validate:"required,min=6,max=30"` // 新密码
 	}
 )
 
@@ -104,51 +101,9 @@ service auth-api {
 	@handler ResetPassword
 	post /auth/password/reset (ResetPasswordReq) returns (BaseResponse)
 
-	// 确认重置
-	@handler ConfirmReset
-	post /auth/password/reset/confirm (ConfirmResetReq) returns (BaseResponse)
-}
-
-type (
-	// 验证令牌 (RFC 7662)
-	VerifyReq {
-		Token         string `form:"token" validate:"required"` // 需要验证的令牌
-		TokenTypeHint string `form:"token_type_hint,optional"`  // 可选值：access 或 refresh
-	}
-	VerifyResp {
-		Active    bool   `json:"active"`             // 是否有效
-		Scope     string `json:"scope,optional"`     // 权限范围
-		ClientID  string `json:"client_id,optional"` // 客户端ID
-		UserID    string `json:"sub,optional"`       // Subject - 用户标识
-		Username  string `json:"username,optional"`
-		ExpiresAt int64  `json:"exp,optional"`       // 过期时间戳
-	}
-
-	JWK struct {
-		Kty string `json:"kty"`          // 密钥类型，如 "RSA"、"EC"
-		Use string `json:"use,optional"` // 用途，如 "sig" (签名)
-		Kid string `json:"kid"`          // 密钥唯一ID
-		Alg string `json:"alg,optional"` // 算法，如 "RS256"
-		// RSA 公钥特有字段
-		N   string `json:"n,optional"`
-		E   string `json:"e,optional"`
-		// EC 公钥特有字段...
-		// ... 其他字段
-	}
-
-	// JWKS (RFC 7517)
-	JWKSResp {
-		Keys []JWK `json:"keys"` // 密钥数组
-	}
-)
-service auth-api {
-	// 令牌自省
-	@handler Introspect
-	post /oauth/introspect (VerifyReq) returns (VerifyResp)
-
-	// 获取 JWKs
-	@handler GetJWKs
-	get /.well-known/jwks.json returns (JWKSResp)
+	// 重设密码
+	@handler ConfirmPassword
+	post /auth/password/reset/confirm (ConfirmPasswordReq) returns (BaseResponse)
 }
 
 type (

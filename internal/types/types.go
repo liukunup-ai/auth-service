@@ -11,7 +11,7 @@ type BaseResponse struct {
 
 type CaptchaResp struct {
 	CaptchaID    string `json:"captchaId"`
-	CaptchaImage string `json:"captchaImage"` // base64 编码过的图片
+	CaptchaImage string `json:"captchaImage"` // base64 编码过的验证码图片
 	ExpiresIn    int64  `json:"expiresIn"`    // 验证码有效期（秒）
 }
 
@@ -20,15 +20,8 @@ type ChangePasswordReq struct {
 	NewPassword string `json:"newPassword" validate:"required,min=6,max=30"`
 }
 
-type CheckPermissionReq struct {
-	UserID   string `json:"userId" validate:"required"`
-	Resource string `json:"resource" validate:"required"`
-	Action   string `json:"action" validate:"required"` // read, write, delete等
-}
-
-type CheckPermissionResp struct {
-	HasPermission bool   `json:"hasPermission"`
-	Message       string `json:"message,optional"`
+type ConfirmPasswordReq struct {
+	NewPassword string `json:"newPassword" validate:"required,min=6,max=30"` // 新密码
 }
 
 type LoginReq struct {
@@ -43,9 +36,9 @@ type LoginResp struct {
 	Username         string `json:"username"`                   // 用户名
 	Email            string `json:"email,optional"`             // 邮箱
 	AccessToken      string `json:"accessToken"`                // 访问令牌
-	AccessExpiresAt  int64  `json:"accessExpiresAt"`            // 访问令牌的过期时间（秒）
+	AccessExpiresAt  int64  `json:"accessExpiresAt"`            // 访问令牌的过期时间（Unix 时间戳，单位：秒）
 	RefreshToken     string `json:"refreshToken"`               // 刷新令牌
-	RefreshExpiresAt int64  `json:"refreshExpiresAt"`           // 刷新令牌的过期时间（秒）
+	RefreshExpiresAt int64  `json:"refreshExpiresAt"`           // 刷新令牌的过期时间（Unix 时间戳，单位：秒）
 	TokenType        string `json:"tokenType" default:"Bearer"` // 令牌类型
 }
 
@@ -54,15 +47,15 @@ type LogoutReq struct {
 	RefreshToken string `json:"refreshToken,optional"`
 }
 
-type RefreshTokenReq struct {
+type RefreshReq struct {
 	RefreshToken string `json:"refreshToken" validate:"required"`
 }
 
-type RefreshTokenResp struct {
+type RefreshResp struct {
 	AccessToken      string `json:"accessToken"`                // 访问令牌
-	AccessExpiresAt  int64  `json:"accessExpiresAt"`            // 访问令牌的过期时间（秒）
+	AccessExpiresAt  int64  `json:"accessExpiresAt"`            // 访问令牌的过期时间（Unix 时间戳，单位：秒）
 	RefreshToken     string `json:"refreshToken"`               // 刷新令牌
-	RefreshExpiresAt int64  `json:"refreshExpiresAt"`           // 刷新令牌的过期时间（秒）
+	RefreshExpiresAt int64  `json:"refreshExpiresAt"`           // 刷新令牌的过期时间（Unix 时间戳，单位：秒）
 	TokenType        string `json:"tokenType" default:"Bearer"` // 令牌类型
 }
 
@@ -84,21 +77,52 @@ type RegisterResp struct {
 }
 
 type ResetPasswordReq struct {
-	Email         string `json:"email" validate:"required,email"`
-	CaptchaID     string `json:"captchaId,optional"`
-	CaptchaAnswer string `json:"captchaAnswer,optional"`
+	Email string `json:"email" validate:"required,email"` // 用户注册时填写的邮箱
 }
 
+type UserProfileResp struct {
+	UserID    string `json:"userId"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	Phone     string `json:"phone,optional"`
+	Nickname  string `json:"nickname,optional"`
+	CreatedAt int64  `json:"createdAt"`
+	UpdatedAt int64  `json:"updatedAt"`
+}
+
+// 权限检查相关
+
+type CheckPermissionReq struct {
+	UserID     int64  `json:"userId" validate:"required"`
+	Permission string `json:"permission" validate:"required"`
+}
+
+type CheckPermissionResp struct {
+	HasPermission bool `json:"hasPermission"`
+}
+
+// 刷新令牌相关
+
+type RefreshTokenReq struct {
+	RefreshToken string `json:"refreshToken" validate:"required"`
+}
+
+type RefreshTokenResp struct {
+	AccessToken      string `json:"accessToken"`
+	AccessExpiresAt  int64  `json:"accessExpiresAt"`
+	RefreshToken     string `json:"refreshToken"`
+	RefreshExpiresAt int64  `json:"refreshExpiresAt"`
+}
+
+// 验证令牌相关
+
 type VerifyTokenReq struct {
-	AccessToken string `json:"accessToken" validate:"required"`
+	Token string `json:"token" validate:"required"`
 }
 
 type VerifyTokenResp struct {
-	IsValid   bool   `json:"isValid"`
-	Message   string `json:"message,optional"`
-	UserID    string `json:"userId,optional"`
-	Username  string `json:"username,optional"`
-	ExpiresAt int64  `json:"expiresAt,optional"`
-	TokenID   string `json:"tokenId,optional"`
-	TokenType string `json:"tokenType" default:"Bearer"`
+	Valid     bool  `json:"valid"`
+	UserID    int64 `json:"userId,omitempty"`
+	Username  string `json:"username,omitempty"`
+	ExpiresAt int64 `json:"expiresAt,omitempty"`
 }

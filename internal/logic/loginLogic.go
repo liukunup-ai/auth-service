@@ -126,7 +126,6 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 		AccessExpiresAt:  tokenPair.AccessExpiresAt,
 		RefreshToken:     tokenPair.RefreshToken,
 		RefreshExpiresAt: tokenPair.RefreshExpiresAt,
-		TokenType:        "Bearer",
 	}
 	return resp, nil
 }
