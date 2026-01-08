@@ -6,6 +6,7 @@ import (
 	"auth-service/internal/logic"
 	"auth-service/internal/svc"
 	"auth-service/internal/types"
+
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
@@ -22,7 +23,11 @@ func RefreshHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {
-			httpx.OkJsonCtx(r.Context(), w, resp)
+			httpx.OkJsonCtx(r.Context(), w, types.BaseResponse{
+				Code:    200,
+				Message: "Token refreshed successfully",
+				Data:    resp,
+			})
 		}
 	}
 }

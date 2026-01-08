@@ -61,13 +61,16 @@ type (
 		TokenType        string `json:"tokenType" default:"Bearer"` // 令牌类型
 	}
 
-	// 重置密码
-	ResetPasswordReq {
-		Email string `json:"email" validate:"required,email"` // 用户注册时填写的邮箱
+	// 忘记密码（发送重设密码邮件）
+	ForgotPasswordReq {
+		Email         string `json:"email" validate:"required,email"` // 用户注册时填写的邮箱
+		CaptchaID     string `json:"captchaId,optional"`
+		CaptchaAnswer string `json:"captchaAnswer,optional"`
 	}
 
-	// 重设密码
+	// 重设密码确认（通过邮件链接中的 token 验证身份）
 	ConfirmPasswordReq {
+		Token       string `json:"token" validate:"required"`                    // 邮件中的重设密码令牌
 		NewPassword string `json:"newPassword" validate:"required,min=6,max=30"` // 新密码
 	}
 )
@@ -79,31 +82,31 @@ type (
 service auth-api {
 	// 获取验证码
 	@handler GetCaptcha
-	get /auth/captcha returns (BaseResponse)
+	get /captcha returns (BaseResponse)
 
 	// 注册
 	@handler Register
-	post /auth/register (RegisterReq) returns (BaseResponse)
+	post /register (RegisterReq) returns (BaseResponse)
 
 	// 登录
 	@handler Login
-	post /auth/login (LoginReq) returns (BaseResponse)
+	post /login (LoginReq) returns (BaseResponse)
 
 	// 登出
 	@handler Logout
-	post /auth/logout (LogoutReq) returns (BaseResponse)
+	post /logout (LogoutReq) returns (BaseResponse)
 
 	// 刷新令牌
 	@handler Refresh
-	post /auth/refresh (RefreshReq) returns (BaseResponse)
+	post /refresh (RefreshReq) returns (BaseResponse)
 
-	// 重置密码
-	@handler ResetPassword
-	post /auth/password/reset (ResetPasswordReq) returns (BaseResponse)
+	// 忘记密码（发送重设密码邮件）
+	@handler ForgotPassword
+	post /password/forgot (ForgotPasswordReq) returns (BaseResponse)
 
-	// 重设密码
+	// 重设密码确认（通过邮件链接重设密码）
 	@handler ConfirmPassword
-	post /auth/password/reset/confirm (ConfirmPasswordReq) returns (BaseResponse)
+	post /password/reset (ConfirmPasswordReq) returns (BaseResponse)
 }
 
 type (
@@ -134,9 +137,9 @@ type (
 service auth-api {
 	// 获取用户信息
 	@handler GetProfile
-	get /auth/me returns (BaseResponse) 
+	get /me returns (BaseResponse) 
 
 	// 修改密码
 	@handler ChangePassword
-	put /auth/password/change (ChangePasswordReq) returns (BaseResponse)
+	put /password/change (ChangePasswordReq) returns (BaseResponse)
 }

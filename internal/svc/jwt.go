@@ -238,7 +238,7 @@ func (j *JWT) BlacklistToken(tokenString string, expire time.Duration) error {
 }
 
 func (j *JWT) isTokenBlacklisted(tokenString string) (bool, error) {
-	key := fmt.Sprintf("%s%s", j.blacklistPrefix, tokenString)
+	key := fmt.Sprintf("%s:%s", j.blacklistPrefix, tokenString)
 
 	ctx := context.Background()
 	exists, err := j.rdb.Exists(ctx, key).Result()

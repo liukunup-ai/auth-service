@@ -66,7 +66,7 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 			return nil
 		},
 		func() error { // 查询邮箱
-			errEmail = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByEmail, "SELECT * FROM user WHERE email = ?", req.Username)
+			errEmail = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByEmail, "SELECT * FROM user WHERE email = ?", req.Email)
 			if errEmail != nil && errEmail != model.ErrNotFound {
 				l.Infof("Find user by email error: %v", errEmail)
 				return errEmail
@@ -74,7 +74,7 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 			return nil
 		},
 		func() error { // 查询手机号
-			errPhone = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByPhone, "SELECT * FROM user WHERE phone = ?", req.Username)
+			errPhone = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByPhone, "SELECT * FROM user WHERE phone = ?", req.Phone)
 			if errPhone != nil && errPhone != model.ErrNotFound {
 				l.Infof("Find user by phone error: %v", errPhone)
 				return errPhone

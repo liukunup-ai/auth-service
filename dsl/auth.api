@@ -1,8 +1,8 @@
 syntax = "v1"
 
 info (
-	title:   "认证服务"
-	desc:    "提供用户认证、令牌管理、权限管理等功能"
+	title:   "认证&权限服务"
+	desc:    "提供用户认证、令牌刷新、权限管理等功能"
 	author:  "我的代码温柔如风"
 	email:   "liukunup@outlook.com"
 	date:    "2025/09/03"
