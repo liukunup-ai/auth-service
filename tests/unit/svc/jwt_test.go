@@ -1,4 +1,4 @@
-package tests
+package svc_test
 
 import (
 	"context"

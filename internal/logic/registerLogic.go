@@ -58,7 +58,7 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 	// 使用 mr.Finish 优雅并发查询
 	mr.Finish(
 		func() error { // 查询用户名
-			errUsername = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByUsername, "SELECT * FROM user WHERE username = ?", req.Username)
+			userByUsername, errUsername = l.svcCtx.UserModel.FindOneByUsername(l.ctx, req.Username)
 			if errUsername != nil && errUsername != model.ErrNotFound {
 				l.Infof("Find user by username error: %v", errUsername)
 				return errUsername
@@ -66,7 +66,7 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 			return nil
 		},
 		func() error { // 查询邮箱
-			errEmail = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByEmail, "SELECT * FROM user WHERE email = ?", req.Email)
+			userByEmail, errEmail = l.svcCtx.UserModel.FindOneByEmail(l.ctx, req.Email)
 			if errEmail != nil && errEmail != model.ErrNotFound {
 				l.Infof("Find user by email error: %v", errEmail)
 				return errEmail
@@ -74,7 +74,7 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 			return nil
 		},
 		func() error { // 查询手机号
-			errPhone = l.svcCtx.DB.QueryRowCtx(l.ctx, &userByPhone, "SELECT * FROM user WHERE phone = ?", req.Phone)
+			userByPhone, errPhone = l.svcCtx.UserModel.FindOneByPhone(l.ctx, req.Phone)
 			if errPhone != nil && errPhone != model.ErrNotFound {
 				l.Infof("Find user by phone error: %v", errPhone)
 				return errPhone

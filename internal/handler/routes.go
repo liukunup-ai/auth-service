@@ -85,4 +85,31 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		rest.WithPrefix("/api/v1"),
 		rest.WithTimeout(3000*time.Millisecond),
 	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/sso/ldap/login",
+				Handler: LDAPLoginHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/sso/oidc/callback",
+				Handler: OIDCCallbackHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/sso/oidc/login",
+				Handler: OIDCLoginHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/sso/providers",
+				Handler: SSOProvidersHandler(serverCtx),
+			},
+		},
+		rest.WithPrefix("/api/v1"),
+		rest.WithTimeout(10000*time.Millisecond),
+	)
 }

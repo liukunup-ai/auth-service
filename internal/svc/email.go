@@ -45,6 +45,19 @@ func (c *Client) SendResetEmail(to, resetURL string) error {
 	return c.sendEmail([]string{to}, subject, body)
 }
 
+var (
+	sendMail = smtp.SendMail
+)
+
+// SetSendMailFunc allows mocking for tests
+func SetSendMailFunc(f func(addr string, a smtp.Auth, from string, to []string, msg []byte) error) {
+	if f == nil {
+		sendMail = smtp.SendMail
+	} else {
+		sendMail = f
+	}
+}
+
 func (c *Client) sendEmail(to []string, subject, body string) error {
 	auth := smtp.PlainAuth("", c.config.Username, c.config.Password, c.config.Host)
 
@@ -52,5 +65,5 @@ func (c *Client) sendEmail(to []string, subject, body string) error {
 		c.config.From, to[0], subject, body)
 
 	addr := fmt.Sprintf("%s:%d", c.config.Host, c.config.Port)
-	return smtp.SendMail(addr, auth, c.config.From, to, []byte(msg))
+	return sendMail(addr, auth, c.config.From, to, []byte(msg))
 }

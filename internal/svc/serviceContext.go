@@ -16,6 +16,7 @@ import (
 	"github.com/mojocn/base64Captcha"
 	"github.com/redis/go-redis/v9"
 	"github.com/sony/sonyflake"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"github.com/zeromicro/go-zero/rest"
 )
@@ -30,6 +31,10 @@ type ServiceContext struct {
 	AuthInterceptor rest.Middleware
 	Sonyflake       *sonyflake.Sonyflake
 	UserModel       model.UserModel
+
+	// SSO Providers
+	OIDC OIDCClient
+	LDAP LDAPClient
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -55,7 +60,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 	// 创建JWT服务
 	jwtService := NewJWT(c, rdb)
-	
+
 	// 创建中间件并设置tokenValidator
 	authInterceptor := middleware.NewAuthInterceptorMiddleware()
 	authInterceptor.SetTokenValidator(func(tokenString string) (middleware.Claims, error) {
@@ -64,11 +69,14 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		if err != nil {
 			return nil, err
 		}
-		
+
 		// 适配CustomClaims到middleware.Claims接口
-		return &JwtClaimsAdapter{claims: claims}, nil
+		return &JwtClaimsAdapter{Claims: claims}, nil
 	})
-	
+
+	// 初始化 SSO 提供者
+	oidcProvider, ldapProvider := initSSOProviders(c)
+
 	return &ServiceContext{
 		Config:          c,
 		DB:              db,
@@ -79,6 +87,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		AuthInterceptor: authInterceptor.Handle,
 		Sonyflake:       initSonyflake(),
 		UserModel:       model.NewUserModel(db),
+		OIDC:            oidcProvider,
+		LDAP:            ldapProvider,
 	}
 }
 
@@ -132,19 +142,50 @@ func initSonyflake() *sonyflake.Sonyflake {
 	return sonyflake.NewSonyflake(settings)
 }
 
+// initSSOProviders 初始化 SSO 提供者
+func initSSOProviders(c config.Config) (*OIDCProvider, *LDAPProvider) {
+	var (
+		oidcProvider *OIDCProvider
+		ldapProvider *LDAPProvider
+		err          error
+	)
+
+	// 初始化 OIDC 提供者
+	if c.SSO.OIDC.Enabled {
+		oidcProvider, err = NewOIDCProvider(c.SSO.OIDC)
+		if err != nil {
+			logx.Errorf("Failed to initialize OIDC provider: %v", err)
+		} else {
+			logx.Info("OIDC provider initialized successfully")
+		}
+	}
+
+	// 初始化 LDAP 提供者
+	if c.SSO.LDAP.Enabled {
+		ldapProvider, err = NewLDAPProvider(c.SSO.LDAP)
+		if err != nil {
+			logx.Errorf("Failed to initialize LDAP provider: %v", err)
+		} else {
+			logx.Info("LDAP provider initialized successfully")
+		}
+	}
+
+	return oidcProvider, ldapProvider
+}
+
 // JwtClaimsAdapter 适配CustomClaims到middleware.Claims接口
 type JwtClaimsAdapter struct {
-	claims *CustomClaims
+	Claims *CustomClaims
 }
 
 // GetUserID 获取用户ID
 func (a *JwtClaimsAdapter) GetUserID() int64 {
-	return int64(a.claims.UserID)
+	return int64(a.Claims.UserID)
 }
 
 // VerifyExpiresAt 验证令牌是否过期
 func (a *JwtClaimsAdapter) VerifyExpiresAt() bool {
-	return a.claims.StandardClaims.ExpiresAt > time.Now().Unix()
+	return a.Claims.StandardClaims.ExpiresAt > time.Now().Unix()
 }
 
 func getMachineID() (uint16, error) {

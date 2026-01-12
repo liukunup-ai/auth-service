@@ -1,4 +1,4 @@
-package tests
+package common
 
 import (
 	"context"
@@ -6,8 +6,10 @@ import (
 
 	"auth-service/internal/config"
 	"auth-service/internal/svc"
+	model "auth-service/model/mysql"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/mojocn/base64Captcha"
 	"github.com/redis/go-redis/v9"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
@@ -102,30 +104,40 @@ func (h *TestHelper) SetupServiceContext(withRedis bool) *svc.ServiceContext {
 		Config:          cfg,
 		DB:              h.db,
 		PasswordEncoder: &svc.PasswordEncoder{},
+		UserModel:       model.NewUserModel(h.db),
+		OIDC:            &MockOIDCClient{},
+		LDAP:            &MockLDAPClient{},
 	}
+
+	// Init Captcha with memory store for safely testing non-redis paths or fallback
+	driver := base64Captcha.NewDriverDigit(80, 240, 6, 0.7, 80)
+	svcCtx.Captcha = base64Captcha.NewCaptcha(driver, base64Captcha.DefaultMemStore)
+
+	// Always set Auth config with dummy values
+	cfg.Auth = struct {
+		AccessSecret         string
+		AccessExpiresIn      int64
+		RefreshSecret        string
+		RefreshExpiresIn     int64
+		BlacklistCachePrefix string
+	}{
+		AccessSecret:         "test-access-secret-key-12345678",
+		AccessExpiresIn:      3600,
+		RefreshSecret:        "test-refresh-secret-key-12345678",
+		RefreshExpiresIn:     7200,
+		BlacklistCachePrefix: "test:blacklist:",
+	}
+	svcCtx.Config = cfg
 
 	if withRedis {
 		if h.redis == nil {
 			h.SetupTestRedis()
 		}
-
-		cfg.Auth = struct {
-			AccessSecret         string
-			AccessExpiresIn      int64
-			RefreshSecret        string
-			RefreshExpiresIn     int64
-			BlacklistCachePrefix string
-		}{
-			AccessSecret:         "test-access-secret-key-12345678",
-			AccessExpiresIn:      3600,
-			RefreshSecret:        "test-refresh-secret-key-12345678",
-			RefreshExpiresIn:     7200,
-			BlacklistCachePrefix: "test:blacklist:",
-		}
-
 		svcCtx.Redis = h.redis
-		svcCtx.JWT = svc.NewJWT(cfg, h.redis)
 	}
+
+	// Initialize JWT
+	svcCtx.JWT = svc.NewJWT(cfg, svcCtx.Redis)
 
 	h.svcCtx = svcCtx
 	return svcCtx

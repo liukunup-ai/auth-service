@@ -31,6 +31,13 @@ type ForgotPasswordReq struct {
 	CaptchaAnswer string `json:"captchaAnswer,optional"`
 }
 
+type LDAPLoginReq struct {
+	Username      string `json:"username" validate:"required"`
+	Password      string `json:"password" validate:"required"`
+	CaptchaID     string `json:"captchaId,optional"`
+	CaptchaAnswer string `json:"captchaAnswer,optional"`
+}
+
 type LoginReq struct {
 	Username      string `json:"username" validate:"required"` // 用户名 (或 邮箱/手机号)
 	Password      string `json:"password" validate:"required"` // 密码
@@ -52,6 +59,17 @@ type LoginResp struct {
 type LogoutReq struct {
 	AccessToken  string `json:"accessToken,optional"`
 	RefreshToken string `json:"refreshToken,optional"`
+}
+
+type OIDCCallbackReq struct {
+	Code             string `form:"code"`                       // 授权码
+	State            string `form:"state"`                      // CSRF 防护 state
+	Error            string `form:"error,optional"`             // 错误码
+	ErrorDescription string `form:"error_description,optional"` // 错误描述
+}
+
+type OIDCLoginReq struct {
+	RedirectURL string `form:"redirectUrl,optional"` // 登录成功后的重定向 URL
 }
 
 type RefreshReq struct {
@@ -81,6 +99,19 @@ type RegisterResp struct {
 	Username  string `json:"username"`
 	Email     string `json:"email"`
 	CreatedAt int64  `json:"createdAt"`
+}
+
+type SSOProvider struct {
+	ID       string `json:"id"`       // 提供者 ID: local, oidc, ldap
+	Name     string `json:"name"`     // 显示名称
+	Type     string `json:"type"`     // 类型
+	Enabled  bool   `json:"enabled"`  // 是否启用
+	LoginURL string `json:"loginUrl"` // 登录入口 URL
+}
+
+type SSOProvidersResp struct {
+	DefaultProvider string        `json:"defaultProvider"`
+	Providers       []SSOProvider `json:"providers"`
 }
 
 type UserProfileResp struct {

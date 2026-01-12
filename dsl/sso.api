@@ -1,0 +1,72 @@
+syntax = "v1"
+
+// ===================== SSO =====================
+
+type (
+	// SSO 提供者信息
+	SSOProvider {
+		ID       string `json:"id"`       // 提供者 ID: local, oidc, ldap
+		Name     string `json:"name"`     // 显示名称
+		Type     string `json:"type"`     // 类型
+		Enabled  bool   `json:"enabled"`  // 是否启用
+		LoginURL string `json:"loginUrl"` // 登录入口 URL
+	}
+
+	// SSO 提供者列表响应
+	SSOProvidersResp {
+		DefaultProvider string        `json:"defaultProvider"`
+		Providers       []SSOProvider `json:"providers"`
+	}
+)
+
+// ===================== OpenID Connect =====================
+
+type (
+	// OIDC 登录请求
+	OIDCLoginReq {
+		RedirectURL string `form:"redirectUrl,optional"` // 登录成功后的重定向 URL
+	}
+
+	// OIDC 回调请求
+	OIDCCallbackReq {
+		Code             string `form:"code"`                       // 授权码
+		State            string `form:"state"`                      // CSRF 防护 state
+		Error            string `form:"error,optional"`             // 错误码
+		ErrorDescription string `form:"error_description,optional"` // 错误描述
+	}
+)
+
+// ===================== LDAP =====================
+
+type (
+	// LDAP 登录请求
+	LDAPLoginReq {
+		Username      string `json:"username" validate:"required"`
+		Password      string `json:"password" validate:"required"`
+		CaptchaID     string `json:"captchaId,optional"`
+		CaptchaAnswer string `json:"captchaAnswer,optional"`
+	}
+)
+
+// SSO 公开路由 (无需认证)
+@server (
+	prefix:  /api/v1
+	timeout: 10s
+)
+service auth-api {
+	// 获取 SSO 提供者列表
+	@handler SSOProviders
+	get /sso/providers returns (BaseResponse)
+
+	// OIDC 登录 (发起授权)
+	@handler OIDCLogin
+	get /sso/oidc/login (OIDCLoginReq) returns (BaseResponse)
+
+	// OIDC 回调
+	@handler OIDCCallback
+	get /sso/oidc/callback (OIDCCallbackReq) returns (BaseResponse)
+
+	// LDAP 登录
+	@handler LDAPLogin
+	post /sso/ldap/login (LDAPLoginReq) returns (BaseResponse)
+}
